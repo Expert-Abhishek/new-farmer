@@ -358,6 +358,93 @@ class EmailService {
       console.log("Error sending registration email:", error);
     }
   }
+  async sendEmailChangeVerification(user: User, newEmail: string, verificationToken: string): Promise<void> {
+    const verificationUrl = `${
+      process.env.FRONTEND_URL || "http://localhost:5000"
+    }/verify-email-change?token=${verificationToken}`;
+
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Email Change Verification</title>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; }
+          .header { background-color: #2d5016; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+          .content { background-color: white; padding: 30px; border-radius: 0 0 8px 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+          .verify-button { display: inline-block; background-color: #2d5016; color: white; padding: 15px 30px; text-decoration: none; border-radius: 6px; margin: 20px 0; font-weight: bold; }
+          .warning { background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 6px; margin: 20px 0; color: #856404; }
+          .info { background-color: #e8f5e8; border: 1px solid #c8e6c8; padding: 15px; border-radius: 6px; margin: 20px 0; color: #2d5016; }
+          .footer { text-align: center; margin-top: 30px; color: #666; font-size: 14px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>📧 Email Change Verification</h1>
+            <p>Harvest Direct - Fresh from Farm to Table</p>
+          </div>
+          <div class="content">
+            <h2>Hello ${user.name}!</h2>
+            <p>We received a request to change the email address associated with your Harvest Direct account.</p>
+            
+            <div class="info">
+              <strong>📋 Change Details:</strong>
+              <ul>
+                <li><strong>Current Email:</strong> ${user.email}</li>
+                <li><strong>New Email:</strong> ${newEmail}</li>
+                <li><strong>Request Time:</strong> ${new Date().toLocaleString()}</li>
+              </ul>
+            </div>
+            
+            <p>To confirm this email change, please click the verification button below:</p>
+            
+            <div style="text-align: center;">
+              <a href="${verificationUrl}" class="verify-button">Verify Email Change</a>
+            </div>
+            
+            <p>Or copy and paste this link into your browser:</p>
+            <p style="word-break: break-all; background-color: #f8f9fa; padding: 10px; border-radius: 4px; font-family: monospace;">${verificationUrl}</p>
+            
+            <div class="warning">
+              <strong>⚠️ Important Security Notice:</strong>
+              <ul>
+                <li>This verification link will expire in 1 hour for your security</li>
+                <li>If you didn't request this email change, please ignore this email and contact support immediately</li>
+                <li>After verification, you'll need to use the new email address to log in</li>
+                <li>Never share this verification link with anyone</li>
+              </ul>
+            </div>
+            
+            <p>If you're having trouble clicking the button, contact our support team.</p>
+            
+            <div class="footer">
+              <p>Best regards,<br>The Harvest Direct Team</p>
+              <p><small>This is an automated email. Please do not reply to this message.</small></p>
+            </div>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    try {
+      const mail = await this.transporter.sendMail({
+        from: `"${this.fromName}" <${this.from}>`,
+        to: user.email, // Send to current email address
+        subject: "📧 Verify Your Email Change Request - Harvest Direct",
+        html,
+      });
+      console.log("Email change verification sent successfully:", mail);
+    } catch (error) {
+      console.log("Error sending email change verification:", error);
+      throw error;
+    }
+  }
+
   async verifyConnection(): Promise<boolean> {
     try {
       await this.transporter.verify();

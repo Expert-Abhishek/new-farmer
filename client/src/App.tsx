@@ -24,6 +24,7 @@ import ShippingReturns from "@/pages/shipping-returns";
 import TrackOrder from "@/pages/track-order";
 import PrivacyPolicy from "@/pages/privacy-policy";
 import Shipping from "@/pages/shipping";
+import VerifyEmailChange from "@/pages/verify-email-change";
 
 // Admin Pages
 import AdminLogin from "@/pages/admin/login";
@@ -89,6 +90,10 @@ function App() {
                         <Route
                           path="/privacy-policy"
                           component={PrivacyPolicy}
+                        />
+                        <Route
+                          path="/verify-email-change"
+                          component={VerifyEmailChange}
                         />
 
                         {/* 404 Route */}

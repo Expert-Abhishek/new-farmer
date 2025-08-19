@@ -63,6 +63,19 @@ Core frontend components include pages for Home, Product Detail, All Products, A
 
 ## Recent Updates (August 19, 2025)
 
+### Email Verification System for Email Changes (Latest)
+- **Complete Email-Based Verification**: Successfully migrated change email functionality from SMS OTP to email verification
+- **Nodemailer Integration**: Implemented comprehensive email verification using nodemailer SMTP service with professional email templates
+- **Database Schema**: Added `emailChangeVerifications` table with secure token management and expiration handling
+- **Security Flow**: Email verification sent to current email address before allowing email changes, preventing unauthorized changes
+- **Frontend Implementation**: Updated ChangeEmailUser component to use email verification workflow instead of SMS OTP
+- **Verification Page**: Created dedicated email verification page at `/verify-email-change` that processes tokens and updates user emails
+- **User Experience**: Added clear information boxes showing current email, new email, and security instructions
+- **Token Security**: 1-hour expiration for verification tokens with proper cleanup of used tokens
+- **Production Ready**: Fully functional email change system with proper error handling and user feedback
+
+## Recent Updates (August 19, 2025)
+
 ### SMS Service Migration from Twilio to Fast2SMS (Latest)
 - **Complete Migration**: Successfully migrated from Twilio to Fast2SMS for all OTP services
 - **DLT Route Implementation**: Implemented Fast2SMS DLT route with proper parameters (route=dlt, sender_id=FSYRTD, message=195093)

@@ -32,6 +32,7 @@ import {
   contactMessages,
   newsletterSubscriptions,
   smsVerifications,
+  emailChangeVerifications,
   users,
   Order,
   insertOrderSchema,
@@ -1004,54 +1005,104 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   );
 
-  // change email  with otp verification
-  // abhi
-
-  app.post(`${apiPrefix}/auth/change-email`, authenticate, async (req, res) => {
+  // Request email change - sends verification email to old email address
+  app.post(`${apiPrefix}/auth/request-email-change`, authenticate, async (req, res) => {
     try {
       const user = (req as any).user;
-      const { value, otp } = req.body;
+      const { newEmail } = req.body;
 
-      if (!value || !otp) {
-        return res
-          .status(400)
-          .json({ message: "New email and OTP are required" });
+      if (!newEmail) {
+        return res.status(400).json({ message: "New email is required" });
       }
 
       // Validate email format
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(value)) {
+      if (!emailRegex.test(newEmail)) {
         return res.status(400).json({ message: "Invalid email format" });
-      }
-
-      // ✅ Verify OTP sent to user's mobile, not email
-      const otpResult = await smsService.verifyOTP(
-        user.mobile,
-        otp,
-        "change_email"
-      );
-
-      if (!otpResult.success) {
-        return res.status(400).json({ message: otpResult.message });
       }
 
       // Check if email already in use
       const existingUser = await db
         .select()
         .from(users)
-        .where(eq(users.email, value));
+        .where(eq(users.email, newEmail));
 
       if (existingUser.length > 0) {
         return res.status(400).json({ message: "Email already in use" });
       }
 
-      // ✅ Correct variable usage
-      await db.update(users).set({ email: value }).where(eq(users.id, user.id));
+      // Generate verification token
+      const verificationToken = crypto.randomBytes(32).toString('hex');
+      const expiresAt = new Date();
+      expiresAt.setHours(expiresAt.getHours() + 1); // Valid for 1 hour
 
-      res.json({ message: "Email updated successfully" });
+      // Remove any existing email change requests for this user
+      await db.delete(emailChangeVerifications).where(eq(emailChangeVerifications.userId, user.id));
+
+      // Store email change request
+      await db.insert(emailChangeVerifications).values({
+        userId: user.id,
+        newEmail,
+        verificationToken,
+        expiresAt,
+      });
+
+      // Send verification email to old email address
+      await emailService.sendEmailChangeVerification(user, newEmail, verificationToken);
+
+      res.json({ 
+        message: "Verification email sent to your current email address. Please check your email to confirm the change." 
+      });
     } catch (error) {
-      console.error("Change email error:", error);
-      res.status(500).json({ message: "Failed to update email" });
+      console.error("Request email change error:", error);
+      res.status(500).json({ message: "Failed to request email change" });
+    }
+  });
+
+  // Verify email change with token from email
+  app.post(`${apiPrefix}/auth/verify-email-change`, async (req, res) => {
+    try {
+      const { token } = req.body;
+
+      if (!token) {
+        return res.status(400).json({ message: "Verification token is required" });
+      }
+
+      const now = new Date();
+
+      // Find valid email change request
+      const verification = await db
+        .select()
+        .from(emailChangeVerifications)
+        .where(
+          and(
+            eq(emailChangeVerifications.verificationToken, token),
+            eq(emailChangeVerifications.verified, false),
+            sql`${emailChangeVerifications.expiresAt} > ${now}`
+          )
+        )
+        .limit(1);
+
+      if (verification.length === 0) {
+        return res.status(400).json({ message: "Invalid or expired verification token" });
+      }
+
+      const changeRequest = verification[0];
+
+      // Update user's email
+      await db.update(users)
+        .set({ email: changeRequest.newEmail })
+        .where(eq(users.id, changeRequest.userId));
+
+      // Mark verification as completed
+      await db.update(emailChangeVerifications)
+        .set({ verified: true })
+        .where(eq(emailChangeVerifications.id, changeRequest.id));
+
+      res.json({ message: "Email updated successfully! Please use your new email address to log in." });
+    } catch (error) {
+      console.error("Verify email change error:", error);
+      res.status(500).json({ message: "Failed to verify email change" });
     }
   });
 

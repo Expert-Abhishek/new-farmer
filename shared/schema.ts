@@ -396,12 +396,34 @@ export const smsVerifications = pgTable("sms_verifications", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+// Email change verifications table
+export const emailChangeVerifications = pgTable("email_change_verifications", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  newEmail: text("new_email").notNull(),
+  verificationToken: text("verification_token").notNull().unique(),
+  verified: boolean("verified").default(false),
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 export const insertSmsVerificationSchema = createInsertSchema(
   smsVerifications
 ).omit({
   id: true,
   createdAt: true,
 });
+
+export const insertEmailChangeVerificationSchema = createInsertSchema(
+  emailChangeVerifications
+).omit({
+  id: true,
+  createdAt: true,
+});
+
+// Export types for emailChangeVerifications
+export type EmailChangeVerification = typeof emailChangeVerifications.$inferSelect;
+export type InsertEmailChangeVerification = typeof insertEmailChangeVerificationSchema._type;
 
 // Payment Schema
 export const payments = pgTable("payments", {

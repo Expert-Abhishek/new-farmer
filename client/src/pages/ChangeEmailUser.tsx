@@ -11,80 +11,43 @@ import { Mail } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { OTPInput } from "@/components/ui/otp-input";
 import { Input } from "@/components/ui/input";
 
 export default function ChangeEmailUser() {
   const { token, user } = useAuth();
   const { toast } = useToast();
   const [showChangeFlow, setShowChangeFlow] = useState(false);
-  const [step, setStep] = useState<"input" | "otp">("input");
   const [newEmail, setNewEmail] = useState("");
-  const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSendOtp = async () => {
+  const handleSendVerificationEmail = async () => {
     if (!user || !token) return;
 
     try {
       setLoading(true);
-      const res = await apiRequest("/api/auth/send-otp", {
+      const res = await apiRequest("/api/auth/request-email-change", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          mobile: (user as any)?.mobile,
-          purpose: "change_email",
-        }),
-      });
-
-      // const data = await res.json();
-      // if (!res.ok) throw new Error(data.message);
-
-      toast({
-        title: "OTP Sent",
-        description: "Check your mobile number.",
-      });
-      setStep("otp");
-    } catch (error: any) {
-      toast({
-        title: "OTP Error",
-        description: error.message || "Failed to send OTP",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleVerifyAndChange = async () => {
-    try {
-      setLoading(true);
-      await apiRequest("/api/auth/change-email", {
-        method: "POST",
-        headers: {
+        headers: { 
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          value: newEmail,
-          otp,
+          newEmail,
         }),
       });
 
       toast({
-        title: "Email Updated",
-        description: `Your email has been changed to ${newEmail}`,
+        title: "Verification Email Sent",
+        description: "Please check your current email address for verification link.",
       });
-
-      // Reset form
+      
+      // Reset form after successful request
       setShowChangeFlow(false);
-      setStep("input");
       setNewEmail("");
-      setOtp("");
     } catch (error: any) {
       toast({
-        title: "Verification Failed",
-        description: error.message || "Could not verify OTP",
+        title: "Request Failed",
+        description: error.message || "Failed to send verification email",
         variant: "destructive",
       });
     } finally {
@@ -113,8 +76,13 @@ export default function ChangeEmailUser() {
             <Mail className="h-4 w-4 mr-2" />
             Change Email
           </Button>
-        ) : step === "input" ? (
+        ) : (
           <div className="space-y-4">
+            <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <p className="text-sm text-yellow-800">
+                <strong>Current Email:</strong> {(user as any)?.email}
+              </p>
+            </div>
             <Input
               type="email"
               placeholder="Enter new email address"
@@ -122,59 +90,24 @@ export default function ChangeEmailUser() {
               onChange={(e) => setNewEmail(e.target.value)}
               disabled={loading}
             />
+            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-sm text-blue-800">
+                <strong>Important:</strong> A verification email will be sent to your current email address ({(user as any)?.email}) to confirm this change.
+              </p>
+            </div>
             <div className="flex gap-4">
-              <Button onClick={handleSendOtp} disabled={!newEmail || loading}>
-                {loading ? "Sending OTP..." : "Send OTP"}
+              <Button onClick={handleSendVerificationEmail} disabled={!newEmail || loading}>
+                {loading ? "Sending Email..." : "Send Verification Email"}
               </Button>
               <Button
                 variant="outline"
                 onClick={() => {
                   setShowChangeFlow(false);
-                  setStep("input");
+                  setNewEmail("");
                 }}
               >
                 Cancel
               </Button>
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-6">
-            <p className="text-sm text-muted-foreground text-center">
-              Enter the OTP sent to <strong>{newEmail}</strong>
-            </p>
-            <OTPInput
-              length={6}
-              value={otp}
-              onChange={setOtp}
-              onComplete={setOtp}
-              disabled={loading}
-            />
-            <div className="space-y-3">
-              <Button
-                onClick={handleVerifyAndChange}
-                className="w-full"
-                disabled={otp.length !== 6 || loading}
-              >
-                {loading ? "Verifying..." : "Verify & Update"}
-              </Button>
-              <div className="flex justify-between text-sm">
-                <Button
-                  variant="ghost"
-                  onClick={handleSendOtp}
-                  disabled={loading}
-                >
-                  Resend OTP
-                </Button>
-                <Button
-                  variant="ghost"
-                  onClick={() => {
-                    setStep("input");
-                    setOtp("");
-                  }}
-                >
-                  ← Back
-                </Button>
-              </div>
             </div>
           </div>
         )}
