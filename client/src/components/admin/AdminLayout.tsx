@@ -17,8 +17,6 @@ import {
   FolderTree,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import logoImage from '@assets/generated_images/Freshly_Rooted_business_logo_5f8265bb.png';
-import { useSiteSettings } from "@/context/SiteContext";
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -34,7 +32,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const [, navigate] = useLocation();
   const [location] = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
-  const { settings } = useSiteSettings();
 
   useEffect(() => {
     // Check if admin is authenticated using JWT token
@@ -143,12 +140,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 <Menu className="h-5 w-5" />
               )}
             </Button>
-            <img
-              src={settings?.siteLogo || logoImage}
-              alt={settings?.siteName || "Freshly Rooted"}
-              className="h-8 w-auto object-contain"
-            />
-            <h1 className="text-xl font-bold">{settings?.siteName || "Freshly Rooted"} Admin</h1>
+            <h1 className="text-xl font-bold">Farm to Table Admin</h1>
           </div>
           <Button variant="outline" size="sm" onClick={handleLogout}>
             <LogOut className="h-4 w-4 mr-2" />

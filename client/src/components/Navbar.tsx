@@ -6,7 +6,6 @@ import { useSiteSettings } from "@/context/SiteContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, ShoppingBasket, Menu, X, User } from "lucide-react";
-import logoImage from '@assets/generated_images/Freshly_Rooted_business_logo_5f8265bb.png';
 
 export default function Navbar() {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
@@ -81,13 +80,15 @@ export default function Navbar() {
       >
         <div className="container mx-auto px-4 lg:px-8 flex items-center justify-between">
           <Link href="/" className="flex items-center space-x-3">
-            <img
-              src={settings?.siteLogo || logoImage}
-              alt={settings?.siteName || "Freshly Rooted"}
-              className="h-10 w-auto object-contain"
-            />
+            {settings.siteLogo && (
+              <img
+                src={settings.siteLogo}
+                alt={settings.siteName}
+                className="h-8 w-8 object-contain"
+              />
+            )}
             <span className="text-forest font-heading text-2xl font-bold">
-              {settings?.siteName || "Freshly Rooted"}
+              {settings.siteName}
             </span>
           </Link>
 
