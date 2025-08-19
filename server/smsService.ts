@@ -1,29 +1,26 @@
-import twilio from "twilio";
+import * as fast2sms from "fast-two-sms";
 import { db } from "./db";
 import { smsVerifications } from "@shared/schema";
 import { eq, and, gte, lt, sql } from "drizzle-orm";
 import dotenv from "dotenv";
 dotenv.config();
-interface SmsConfig {
-  accountSid: string;
-  authToken: string;
-  phoneNumber: string;
+
+interface Fast2SmsConfig {
+  apiKey: string;
+  senderId?: string;
 }
 
 class SmsService {
-  private client: twilio.Twilio;
-  private fromPhoneNumber: string;
+  private apiKey: string;
+  private senderId: string;
 
   constructor() {
-    const accountSid = process.env.TWILIO_ACCOUNT_SID;
-    const authToken = process.env.TWILIO_AUTH_TOKEN;
-    this.fromPhoneNumber = process.env.TWILIO_PHONE_NUMBER!;
+    this.apiKey = process.env.FAST2SMS_API_KEY || "";
+    this.senderId = process.env.FAST2SMS_SENDER_ID || "FSTSMS";
 
-    if (!accountSid || !authToken || !this.fromPhoneNumber) {
-      throw new Error("Twilio credentials are not properly configured");
+    if (!this.apiKey) {
+      console.warn("Fast2SMS API key is not configured. SMS functionality will be disabled.");
     }
-
-    this.client = twilio(accountSid, authToken);
   }
 
   /**
@@ -132,6 +129,14 @@ class SmsService {
       | "change_number"
   ): Promise<{ success: boolean; message: string }> {
     try {
+      // Check if Fast2SMS is configured
+      if (!this.apiKey) {
+        return {
+          success: false,
+          message: "SMS service is not configured. Please contact administrator.",
+        };
+      }
+
       // ✅ Validate mobile
       if (!this.validateMobileNumber(mobile)) {
         return {
@@ -165,10 +170,14 @@ class SmsService {
 
       const message = messages[purpose] || `Your OTP is: ${otp}`;
 
-      await this.client.messages.create({
-        body: message,
-        from: this.fromPhoneNumber,
-        to: this.formatMobileNumber(mobile),
+      // Send SMS using Fast2SMS
+      const response = await fast2sms.sendMessage({
+        authorization: this.apiKey,
+        message: message,
+        numbers: [mobile],
+        sender_id: this.senderId,
+        route: "otp", // Use OTP route for better delivery
+        flash: 0 // 0 for normal SMS, 1 for flash SMS
       });
 
       return {
