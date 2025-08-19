@@ -82,12 +82,12 @@ export default function Navbar() {
         <div className="container mx-auto px-4 lg:px-8 flex items-center justify-between">
           <Link href="/" className="flex items-center space-x-3">
             <img
-              src={logoImage}
-              alt="Freshly Rooted"
+              src={settings?.siteLogo || logoImage}
+              alt={settings?.siteName || "Freshly Rooted"}
               className="h-10 w-auto object-contain"
             />
             <span className="text-forest font-heading text-2xl font-bold">
-              Freshly Rooted
+              {settings?.siteName || "Freshly Rooted"}
             </span>
           </Link>
 
