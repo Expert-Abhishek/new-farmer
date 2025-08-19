@@ -17,7 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import { Save, Store, Globe } from "lucide-react";
+import { Save, Store, Globe, Upload, X, Image } from "lucide-react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import MainLoader from "@/utils/MainLoader";
 
@@ -82,6 +82,9 @@ type SettingsFormData = z.infer<typeof settingsSchema>;
 
 export default function AdminSettings() {
   const { toast } = useToast();
+  const [logoFile, setLogoFile] = React.useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = React.useState<string | null>(null);
+  const [isUploadingLogo, setIsUploadingLogo] = React.useState(false);
 
   const { data: settings = [], isLoading } = useQuery({
     queryKey: ["/api/admin/site-settings"],
@@ -109,8 +112,50 @@ export default function AdminSettings() {
   React.useEffect(() => {
     if (settingsMap && Object.keys(settingsMap).length > 0) {
       form.reset(settingsMap);
+      // Set logo preview if there's an existing logo
+      if (settingsMap.site_logo) {
+        setLogoPreview(settingsMap.site_logo);
+      }
     }
   }, [settingsMap, form]);
+
+  const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith('image/')) {
+        toast({
+          title: "Invalid file type",
+          description: "Please select an image file.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        toast({
+          title: "File too large",
+          description: "Please select an image smaller than 5MB.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setLogoFile(file);
+      
+      // Create preview URL
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setLogoPreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeLogo = () => {
+    setLogoFile(null);
+    setLogoPreview(null);
+    form.setValue('site_logo', '');
+  };
 
   const updateSettingMutation = useMutation({
     mutationFn: (
@@ -133,7 +178,37 @@ export default function AdminSettings() {
 
   const onSubmit = async (data: SettingsFormData) => {
     try {
-      const updates = Object.entries(data).map(([key, value]) => ({
+      let logoUrl = data.site_logo;
+
+      // If there's a new logo file to upload
+      if (logoFile) {
+        setIsUploadingLogo(true);
+        const formData = new FormData();
+        formData.append('image', logoFile);
+
+        const uploadResponse = await fetch('/api/upload/product-image', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!uploadResponse.ok) {
+          throw new Error('Failed to upload logo');
+        }
+
+        const uploadData = await uploadResponse.json();
+        logoUrl = uploadData.imagePath;
+        
+        toast({
+          title: "Logo uploaded successfully",
+          description: "Your site logo has been uploaded and will be updated.",
+        });
+        
+        setIsUploadingLogo(false);
+        setLogoFile(null);
+        setLogoPreview(null);
+      }
+
+      const updates = Object.entries({ ...data, site_logo: logoUrl }).map(([key, value]) => ({
         key,
         value: value || "",
         type: "text",
@@ -148,6 +223,7 @@ export default function AdminSettings() {
         variant: "default",
       });
     } catch (error) {
+      setIsUploadingLogo(false);
       toast({
         title: "Error",
         description: "Failed to update settings. Please try again.",
@@ -232,13 +308,77 @@ export default function AdminSettings() {
                 )}
               </div>
             </div>
-            <div>
-              <Label htmlFor="site_logo">Site Logo URL (Optional)</Label>
-              <Input
-                id="site_logo"
-                {...form.register("site_logo")}
-                placeholder="https://example.com/logo.png"
-              />
+            <div className="space-y-4">
+              <Label>Site Logo (Optional)</Label>
+              
+              {/* Logo Preview */}
+              {logoPreview && (
+                <div className="flex items-center gap-4 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
+                  <img
+                    src={logoPreview}
+                    alt="Logo preview"
+                    className="h-16 w-16 object-contain border rounded"
+                  />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">Current Logo</p>
+                    <p className="text-xs text-muted-foreground">
+                      {logoFile ? 'New upload pending save' : 'Currently active'}
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={removeLogo}
+                    className="text-destructive hover:bg-destructive/10"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+
+              {/* Upload Options */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="logo-upload" className="text-sm font-medium">
+                    Upload New Logo
+                  </Label>
+                  <div className="mt-1">
+                    <input
+                      id="logo-upload"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleLogoUpload}
+                      className="hidden"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => document.getElementById('logo-upload')?.click()}
+                      className="w-full justify-center"
+                    >
+                      <Upload className="h-4 w-4 mr-2" />
+                      Choose Image
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    PNG, JPG, WebP up to 5MB. Recommended: 200x200px
+                  </p>
+                </div>
+
+                <div>
+                  <Label htmlFor="site_logo">Or Enter URL</Label>
+                  <Input
+                    id="site_logo"
+                    {...form.register("site_logo")}
+                    placeholder="https://example.com/logo.png"
+                    className="mt-1"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Direct link to your logo image
+                  </p>
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -452,11 +592,14 @@ export default function AdminSettings() {
         <div className="flex justify-between">
           <Button
             type="submit"
-            disabled={updateSettingMutation.isPending}
+            disabled={updateSettingMutation.isPending || isUploadingLogo}
             className="min-w-[120px]"
           >
-            {updateSettingMutation.isPending ? (
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+            {(updateSettingMutation.isPending || isUploadingLogo) ? (
+              <div className="flex items-center">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                {isUploadingLogo ? 'Uploading Logo...' : 'Saving...'}
+              </div>
             ) : (
               <>
                 <Save className="h-4 w-4 mr-2" />
