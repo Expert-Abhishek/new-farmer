@@ -17,6 +17,7 @@ import {
   FolderTree,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import logoImage from '@assets/generated_images/Freshly_Rooted_business_logo_5f8265bb.png';
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -140,7 +141,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 <Menu className="h-5 w-5" />
               )}
             </Button>
-            <h1 className="text-xl font-bold">Farm to Table Admin</h1>
+            <img
+              src={logoImage}
+              alt="Freshly Rooted"
+              className="h-8 w-auto object-contain"
+            />
+            <h1 className="text-xl font-bold">Freshly Rooted Admin</h1>
           </div>
           <Button variant="outline" size="sm" onClick={handleLogout}>
             <LogOut className="h-4 w-4 mr-2" />
