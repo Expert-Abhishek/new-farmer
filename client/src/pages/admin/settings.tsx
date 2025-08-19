@@ -88,9 +88,18 @@ export default function AdminSettings() {
 
   const { data: settings = [], isLoading } = useQuery({
     queryKey: ["/api/admin/site-settings"],
-    queryFn: () => apiRequest("/api/admin/site-settings"),
-    refetchOnMount: "always", // <— ensures fresh fetch when navigating back
-    staleTime: 0, // <— never consider it fresh for long
+    queryFn: async () => {
+      try {
+        // Try admin endpoint first
+        return await apiRequest("/api/admin/site-settings");
+      } catch (error) {
+        // Fallback to public endpoint if admin auth fails
+        console.warn("Admin endpoint failed, falling back to public endpoint");
+        return await apiRequest("/api/site-settings");
+      }
+    },
+    refetchOnMount: "always",
+    staleTime: 0,
   });
 
   // Transform settings array to object for form
@@ -186,7 +195,7 @@ export default function AdminSettings() {
         const formData = new FormData();
         formData.append('image', logoFile);
 
-        const uploadResponse = await fetch('/api/upload/product-image', {
+        const uploadResponse = await fetch('/api/images/upload/product-image', {
           method: 'POST',
           body: formData,
         });
@@ -204,8 +213,6 @@ export default function AdminSettings() {
         });
         
         setIsUploadingLogo(false);
-        setLogoFile(null);
-        setLogoPreview(null);
       }
 
       const updates = Object.entries({ ...data, site_logo: logoUrl }).map(([key, value]) => ({
@@ -216,6 +223,9 @@ export default function AdminSettings() {
       }));
 
       await updateSettingMutation.mutateAsync(updates);
+      
+      // Clear the logo file after successful save
+      setLogoFile(null);
 
       toast({
         title: "Settings Updated",
