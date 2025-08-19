@@ -36,8 +36,8 @@ class EmailService {
       },
     };
 
-    this.from = process.env.EMAIL_FROM || "noreply@harvestdirect.com";
-    this.fromName = process.env.EMAIL_FROM_NAME || "Harvest Direct";
+    this.from = process.env.EMAIL_FROM || "noreply@freshlyrooted.com";
+    this.fromName = process.env.EMAIL_FROM_NAME || "Freshly Rooted";
 
     this.transporter = nodemailer.createTransport(config);
   }
@@ -91,7 +91,7 @@ class EmailService {
         <div class="container">
           <div class="header">
             <h1>🌱 New Order Received!</h1>
-            <p>Harvest Direct - Fresh from Farm to Table</p>
+            <p>Freshly Rooted - Fresh from Farm to Table</p>
           </div>
           <div class="content">
             <div class="order-info">
@@ -360,7 +360,7 @@ class EmailService {
   }
   async sendEmailChangeVerification(user: User, newEmail: string, verificationToken: string): Promise<void> {
     const verificationUrl = `${
-      process.env.FRONTEND_URL || "http://localhost:5000"
+      process.env.VITE_BASE_URL || "http://localhost:5000"
     }/verify-email-change?token=${verificationToken}`;
 
     const html = `
@@ -385,11 +385,11 @@ class EmailService {
         <div class="container">
           <div class="header">
             <h1>📧 Email Change Verification</h1>
-            <p>Harvest Direct - Fresh from Farm to Table</p>
+            <p>Freshly Rooted - Fresh from Farm to Table</p>
           </div>
           <div class="content">
             <h2>Hello ${user.name}!</h2>
-            <p>We received a request to change the email address associated with your Harvest Direct account.</p>
+            <p>We received a request to change the email address associated with your Freshly Rooted account.</p>
             
             <div class="info">
               <strong>📋 Change Details:</strong>

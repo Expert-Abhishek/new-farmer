@@ -22,8 +22,12 @@ export default function VerifyEmailChange() {
     const verifyEmailChange = async () => {
       try {
         // Get token from URL params
-        const urlParams = new URLSearchParams(location.split('?')[1] || '');
+        const urlParams = new URLSearchParams(window.location.search);
         const token = urlParams.get('token');
+        
+        console.log('Current URL:', window.location.href);
+        console.log('URL params:', window.location.search);
+        console.log('Token extracted:', token);
 
         if (!token) {
           setStatus("error");
@@ -69,62 +73,63 @@ export default function VerifyEmailChange() {
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="flex items-center justify-center gap-2">
-            {status === "loading" && <Mail className="h-6 w-6 animate-spin" />}
-            {status === "success" && <CheckCircle className="h-6 w-6 text-green-600" />}
-            {status === "error" && <XCircle className="h-6 w-6 text-red-600" />}
-            Email Verification
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
+            {status === "loading" && <Mail className="w-8 h-8 text-primary animate-pulse" />}
+            {status === "success" && <CheckCircle className="w-8 h-8 text-green-600" />}
+            {status === "error" && <XCircle className="w-8 h-8 text-destructive" />}
+          </div>
+          <CardTitle className="text-2xl font-bold">
+            {status === "loading" && "Verifying Email Change"}
+            {status === "success" && "Email Updated Successfully"}
+            {status === "error" && "Verification Failed"}
           </CardTitle>
-          <CardDescription>
-            {status === "loading" && "Verifying your email change..."}
-            {status === "success" && "Email change verified successfully"}
-            {status === "error" && "Email verification failed"}
+          <CardDescription className="text-muted-foreground">
+            {message}
           </CardDescription>
         </CardHeader>
-        <CardContent className="text-center space-y-6">
-          <div className={`p-4 rounded-lg ${
-            status === "loading" ? "bg-blue-50 border border-blue-200" :
-            status === "success" ? "bg-green-50 border border-green-200" :
-            "bg-red-50 border border-red-200"
-          }`}>
-            <p className={`text-sm ${
-              status === "loading" ? "text-blue-800" :
-              status === "success" ? "text-green-800" :
-              "text-red-800"
-            }`}>
-              {message}
-            </p>
-          </div>
-
+        
+        <CardContent className="space-y-4">
           {status === "success" && (
-            <div className="space-y-3">
-              <p className="text-sm text-muted-foreground">
-                You will be redirected to the login page automatically in a few seconds.
+            <div className="bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-lg p-4">
+              <div className="flex items-center">
+                <CheckCircle className="w-5 h-5 text-green-600 mr-2" />
+                <span className="text-green-800 dark:text-green-200 text-sm">
+                  You can now use your new email address to log in
+                </span>
+              </div>
+            </div>
+          )}
+          
+          {status === "error" && (
+            <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-lg p-4">
+              <div className="flex items-center">
+                <XCircle className="w-5 h-5 text-red-600 mr-2" />
+                <span className="text-red-800 dark:text-red-200 text-sm">
+                  Please request a new email change if needed
+                </span>
+              </div>
+            </div>
+          )}
+          
+          {status === "success" && (
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground mb-4">
+                Redirecting to login page in a few seconds...
               </p>
-              <Button onClick={() => setLocation("/login")} className="w-full">
+              <Button onClick={() => setLocation("/login")} variant="outline">
                 Go to Login Now
               </Button>
             </div>
           )}
-
+          
           {status === "error" && (
-            <div className="space-y-3">
-              <Button onClick={() => setLocation("/account")} className="w-full">
-                Back to Account
+            <div className="flex flex-col space-y-2">
+              <Button onClick={() => setLocation("/account")} variant="outline">
+                Back to Account Settings
               </Button>
-              <Button 
-                variant="outline" 
-                onClick={() => setLocation("/login")}
-                className="w-full"
-              >
-                Go to Login
+              <Button onClick={() => window.location.reload()}>
+                Try Again
               </Button>
-            </div>
-          )}
-
-          {status === "loading" && (
-            <div className="flex items-center justify-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
             </div>
           )}
         </CardContent>
