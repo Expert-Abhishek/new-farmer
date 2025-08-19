@@ -1,4 +1,4 @@
-import * as fast2sms from "fast-two-sms";
+// Removed fast2sms library dependency - using direct fetch instead
 import { db } from "./db";
 import { smsVerifications } from "@shared/schema";
 import { eq, and, gte, lt, sql } from "drizzle-orm";
@@ -172,22 +172,53 @@ class SmsService {
 
       const message = messages[purpose] || `Your OTP is: ${otp}`;
 
-      // Send SMS using Fast2SMS
-      const response = await fast2sms.sendMessage({
-        authorization: this.apiKey,
-        message: message,
-        numbers: [mobile],
-        sender_id: this.senderId,
-        route: "otp", // Use OTP route for better delivery
-        flash: 0 // 0 for normal SMS, 1 for flash SMS
+      // Send SMS using Fast2SMS direct API call
+      const fast2smsUrl = "https://www.fast2sms.com/dev/bulkV2";
+      const requestBody = {
+        variables_values: otp, // Only the OTP numeric value (up to 8 digits)
+        route: "otp", // For OTP Message use "otp"
+        numbers: mobile, // Mobile number as string
+        flash: "0" // 0 for normal SMS, 1 for flash SMS
+      };
+
+      const response = await fetch(fast2smsUrl, {
+        method: "POST",
+        headers: {
+          "authorization": this.apiKey,
+          "content-type": "application/json"
+        },
+        body: JSON.stringify(requestBody)
       });
 
-      console.log("Fast2SMS response:", response);
+      const responseData = await response.json();
+      console.log("Fast2SMS response:", responseData);
 
-      return {
-        success: true,
-        message: "OTP sent successfully to your mobile number.",
-      };
+      // Check if Fast2SMS API call was successful
+      if (responseData.return === true || responseData.status_code === 200) {
+        return {
+          success: true,
+          message: "OTP sent successfully to your mobile number.",
+        };
+      } else {
+        // Handle specific Fast2SMS error codes
+        let errorMessage = "Failed to send OTP. Please try again.";
+        
+        if (responseData.status_code === 996) {
+          errorMessage = "SMS service requires website verification. Please contact admin.";
+          console.error("Fast2SMS Error: Website verification required for OTP API");
+        } else if (responseData.status_code === 402) {
+          errorMessage = "SMS configuration error. Please contact admin.";
+          console.error("Fast2SMS Error: Message text missing or invalid format");
+        } else if (responseData.status_code === 408) {
+          errorMessage = "SMS service configuration error. Please contact admin.";
+          console.error("Fast2SMS Error: Invalid route specified");
+        }
+        
+        return {
+          success: false,
+          message: errorMessage,
+        };
+      }
     } catch (error) {
       console.error("Error sending SMS:", error);
       return {

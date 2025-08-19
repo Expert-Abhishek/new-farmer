@@ -1,11 +1,10 @@
 declare module 'fast-two-sms' {
   interface Fast2SmsOptions {
     authorization: string;
-    message: string;
-    numbers: string[];
-    sender_id?: string;
-    route?: string;
-    flash?: number;
+    variables_values: string; // OTP value (only numeric, up to 8 digits)
+    route: string; // For OTP use "otp"
+    numbers: string[]; // Mobile numbers as array (library converts to comma-separated internally)
+    flash?: string; // "0" for normal SMS, "1" for flash SMS
   }
 
   interface Fast2SmsResponse {

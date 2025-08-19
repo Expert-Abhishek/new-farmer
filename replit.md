@@ -65,12 +65,15 @@ Core frontend components include pages for Home, Product Detail, All Products, A
 
 ### SMS Service Migration from Twilio to Fast2SMS (Latest)
 - **Complete Migration**: Successfully migrated from Twilio to Fast2SMS for all OTP services
-- **API Integration**: Configured fast-two-sms library with proper TypeScript declarations
+- **Direct API Integration**: Implemented direct fetch calls to Fast2SMS API for better control
+- **Correct API Format**: Fixed parameter structure (variables_values, route: "otp", proper headers)
+- **Error Handling**: Added comprehensive error handling for Fast2SMS response codes
 - **Service Features**: Supports all OTP purposes (registration, password reset, account deletion, email/mobile change)
-- **Environment Setup**: Added FAST2SMS_API_KEY and FAST2SMS_SENDER_ID configuration
-- **Enhanced Logging**: Added service initialization and response logging for debugging
-- **Graceful Fallback**: Service handles missing API keys gracefully without crashing the application
+- **Environment Setup**: Added FAST2SMS_API_KEY configuration with proper OTP route
+- **Enhanced Logging**: Added service initialization and detailed response logging for debugging
+- **Graceful Fallback**: Service handles missing API keys and verification errors gracefully
 - **Admin Settings Enhancement**: Fixed image upload endpoint path and added authentication fallback
+- **Verification Status**: Fast2SMS account requires website verification to enable OTP route (status code 996)
 
 ### Previous Updates (August 16, 2025)
 
