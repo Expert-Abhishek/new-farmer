@@ -1130,9 +1130,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
             .json({ message: "Invalid mobile number format" });
         }
 
-        // ✅ Verify OTP sent to new mobile number
+        // ✅ Verify OTP sent to OLD mobile number (for security)
         const otpResult = await smsService.verifyOTP(
-          value,
+          user.mobile,
           otp,
           "change_number"
         );

@@ -42,7 +42,7 @@ export default function ChangeNumberUser() {
 
       toast({
         title: "OTP Sent",
-        description: "Check your mobile number.",
+        description: `OTP sent to your current number ${(user as any)?.mobile}`,
       });
       setStep("otp");
     } catch (error: any) {
@@ -140,7 +140,7 @@ export default function ChangeNumberUser() {
         ) : (
           <div className="space-y-6">
             <p className="text-sm text-muted-foreground text-center">
-              Enter the OTP sent to <strong>{newNumber}</strong>
+              Enter the OTP sent to your current number <strong>{(user as any)?.mobile}</strong>
             </p>
             <OTPInput
               length={6}
