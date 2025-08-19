@@ -61,7 +61,18 @@ Core frontend components include pages for Home, Product Detail, All Products, A
 - India Post API (for shipping and tracking services)
 - Razorpay (for payment processing)
 
-## Recent Updates (August 16, 2025)
+## Recent Updates (August 19, 2025)
+
+### SMS Service Migration from Twilio to Fast2SMS (Latest)
+- **Complete Migration**: Successfully migrated from Twilio to Fast2SMS for all OTP services
+- **API Integration**: Configured fast-two-sms library with proper TypeScript declarations
+- **Service Features**: Supports all OTP purposes (registration, password reset, account deletion, email/mobile change)
+- **Environment Setup**: Added FAST2SMS_API_KEY and FAST2SMS_SENDER_ID configuration
+- **Enhanced Logging**: Added service initialization and response logging for debugging
+- **Graceful Fallback**: Service handles missing API keys gracefully without crashing the application
+- **Admin Settings Enhancement**: Fixed image upload endpoint path and added authentication fallback
+
+### Previous Updates (August 16, 2025)
 
 ### Category and Subcategory Validation System (Latest)
 - **Separate Entity Validation**: Categories and subcategories are treated as completely separate entities

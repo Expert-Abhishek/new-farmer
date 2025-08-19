@@ -20,6 +20,8 @@ class SmsService {
 
     if (!this.apiKey) {
       console.warn("Fast2SMS API key is not configured. SMS functionality will be disabled.");
+    } else {
+      console.log("Fast2SMS service initialized successfully");
     }
   }
 
@@ -179,6 +181,8 @@ class SmsService {
         route: "otp", // Use OTP route for better delivery
         flash: 0 // 0 for normal SMS, 1 for flash SMS
       });
+
+      console.log("Fast2SMS response:", response);
 
       return {
         success: true,
