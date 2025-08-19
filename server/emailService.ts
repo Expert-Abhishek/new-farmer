@@ -1,5 +1,5 @@
 import nodemailer from "nodemailer";
-import { Order, OrderItem, User } from "../shared/schema";
+import { Order, OrderItem, User, SiteSetting } from "../shared/schema";
 
 interface EmailConfig {
   host: string;
@@ -19,12 +19,19 @@ interface OrderEmailData {
   totalAmount: number;
 }
 
+interface SiteInfo {
+  siteName: string;
+  siteTagline: string;
+  baseUrl: string;
+}
+
 class EmailService {
   private transporter: nodemailer.Transporter;
   private from: string;
   private fromName: string;
+  private getSiteSettings: () => Promise<SiteSetting[]>;
 
-  constructor() {
+  constructor(getSiteSettingsCallback: () => Promise<SiteSetting[]>) {
     // Use hardcoded Mailtrap credentials as fallback since env vars aren't loading properly
     const config: EmailConfig = {
       host: process.env.EMAIL_HOST || "sandbox.smtp.mailtrap.io",
@@ -38,13 +45,42 @@ class EmailService {
 
     this.from = process.env.EMAIL_FROM || "noreply@freshlyrooted.com";
     this.fromName = process.env.EMAIL_FROM_NAME || "Freshly Rooted";
+    this.getSiteSettings = getSiteSettingsCallback;
 
     this.transporter = nodemailer.createTransport(config);
   }
 
+  private async getSiteInfo(): Promise<SiteInfo> {
+    try {
+      const settings = await this.getSiteSettings();
+      const siteNameSetting = settings.find(s => s.key === 'site_name');
+      const siteTaglineSetting = settings.find(s => s.key === 'site_tagline');
+      
+      // Use environment variable for base URL, fallback to Replit domain or localhost
+      const baseUrl = process.env.VITE_API_URL || 
+                     (process.env.REPLIT_DEV_DOMAIN ? `https://${process.env.REPLIT_DEV_DOMAIN}` : 'http://localhost:5000');
+      
+      return {
+        siteName: siteNameSetting?.value || 'Freshly Rooted',
+        siteTagline: siteTaglineSetting?.value || 'Fresh from Farm to Table',
+        baseUrl
+      };
+    } catch (error) {
+      console.error('Error fetching site settings for email:', error);
+      // Fallback values
+      const baseUrl = process.env.VITE_API_URL || 
+                     (process.env.REPLIT_DEV_DOMAIN ? `https://${process.env.REPLIT_DEV_DOMAIN}` : 'http://localhost:5000');
+      return {
+        siteName: 'Freshly Rooted',
+        siteTagline: 'Fresh from Farm to Table',
+        baseUrl
+      };
+    }
+  }
+
   async sendOrderNotificationToAdmin(orderData: OrderEmailData): Promise<void> {
-    const { order, orderItems, customerEmail, customerName, totalAmount } =
-      orderData;
+    const { order, orderItems, customerEmail, customerName, totalAmount } = orderData;
+    const siteInfo = await this.getSiteInfo();
 
     const orderItemsHtml = orderItems
       .map(
@@ -91,7 +127,7 @@ class EmailService {
         <div class="container">
           <div class="header">
             <h1>🌱 New Order Received!</h1>
-            <p>Freshly Rooted - Fresh from Farm to Table</p>
+            <p>${siteInfo.siteName} - ${siteInfo.siteTagline}</p>
           </div>
           <div class="content">
             <div class="order-info">
@@ -142,7 +178,7 @@ class EmailService {
             </table>
 
             <div class="footer">
-              <p>This is an automated notification from your Harvest Direct admin panel.</p>
+              <p>This is an automated notification from your ${siteInfo.siteName} admin panel.</p>
               <p>Please process this order promptly to maintain customer satisfaction.</p>
             </div>
           </div>
@@ -154,15 +190,14 @@ class EmailService {
     await this.transporter.sendMail({
       from: `"${this.fromName}" <${this.from}>`,
       to: process.env.ADMIN_EMAIL || "admin@harvestdirect.com",
-      subject: `🌱 New Order #${order.id} - ₹${totalAmount.toFixed(2)}`,
+      subject: `🌱 New Order #${order.id} - ₹${totalAmount.toFixed(2)} - ${siteInfo.siteName}`,
       html,
     });
   }
 
   async sendPasswordResetEmail(user: User, resetToken: string): Promise<void> {
-    const resetUrl = `${
-      process.env.FRONTEND_URL || "http://localhost:5000"
-    }/reset-password?token=${resetToken}`;
+    const siteInfo = await this.getSiteInfo();
+    const resetUrl = `${siteInfo.baseUrl}/reset-password?token=${resetToken}`;
 
     const html = `
       <!DOCTYPE html>
@@ -185,11 +220,11 @@ class EmailService {
         <div class="container">
           <div class="header">
             <h1>🔐 Password Reset Request</h1>
-            <p>Harvest Direct - Fresh from Farm to Table</p>
+            <p>${siteInfo.siteName} - ${siteInfo.siteTagline}</p>
           </div>
           <div class="content">
             <h2>Hello ${user.name}!</h2>
-            <p>We received a request to reset your password for your Harvest Direct account.</p>
+            <p>We received a request to reset your password for your ${siteInfo.siteName} account.</p>
             
             <div style="text-align: center;">
               <a href="${resetUrl}" class="reset-button">Reset My Password</a>
@@ -210,7 +245,7 @@ class EmailService {
             <p>If you're having trouble clicking the button, contact our support team.</p>
             
             <div class="footer">
-              <p>Best regards,<br>The Harvest Direct Team</p>
+              <p>Best regards,<br>The ${siteInfo.siteName} Team</p>
               <p><small>This is an automated email. Please do not reply to this message.</small></p>
             </div>
           </div>
@@ -222,12 +257,14 @@ class EmailService {
     await this.transporter.sendMail({
       from: `"${this.fromName}" <${this.from}>`,
       to: user.email,
-      subject: "🔐 Reset Your Harvest Direct Password",
+      subject: `🔐 Reset Your ${siteInfo.siteName} Password`,
       html,
     });
   }
 
   async sendPasswordResetConfirmation(user: User): Promise<void> {
+    const siteInfo = await this.getSiteInfo();
+    
     const html = `
       <!DOCTYPE html>
       <html>
@@ -249,7 +286,7 @@ class EmailService {
         <div class="container">
           <div class="header">
             <h1>✅ Password Reset Successful</h1>
-            <p>Harvest Direct - Fresh from Farm to Table</p>
+            <p>${siteInfo.siteName} - ${siteInfo.siteTagline}</p>
           </div>
           <div class="content">
             <h2>Hello ${user.name}!</h2>
@@ -258,18 +295,16 @@ class EmailService {
               <strong>✅ Success!</strong> Your password has been successfully reset.
             </div>
             
-            <p>Your Harvest Direct account password has been updated. You can now log in with your new password.</p>
+            <p>Your ${siteInfo.siteName} account password has been updated. You can now log in with your new password.</p>
             
             <div style="text-align: center;">
-              <a href="${
-                process.env.FRONTEND_URL || "http://localhost:5000"
-              }/login" class="login-button">Login to Your Account</a>
+              <a href="${siteInfo.baseUrl}/login" class="login-button">Login to Your Account</a>
             </div>
             
             <p><strong>Security tip:</strong> If you didn't make this change, please contact our support team immediately.</p>
             
             <div class="footer">
-              <p>Best regards,<br>The Harvest Direct Team</p>
+              <p>Best regards,<br>The ${siteInfo.siteName} Team</p>
               <p><small>This is an automated email. Please do not reply to this message.</small></p>
             </div>
           </div>
@@ -281,14 +316,13 @@ class EmailService {
     await this.transporter.sendMail({
       from: `"${this.fromName}" <${this.from}>`,
       to: user.email,
-      subject: "✅ Your Harvest Direct Password Has Been Reset",
+      subject: `✅ Your ${siteInfo.siteName} Password Has Been Reset`,
       html,
     });
   }
   async registerEmail(user: User, resetToken: string): Promise<void> {
-    const resetUrl = `${
-      process.env.FRONTEND_URL || "http://localhost:5000"
-    }/auth/verify?token=${resetToken}`;
+    const siteInfo = await this.getSiteInfo();
+    const resetUrl = `${siteInfo.baseUrl}/auth/verify?token=${resetToken}`;
 
     const html = `
     <!DOCTYPE html>
@@ -311,11 +345,11 @@ class EmailService {
     <div class="container">
       <div class="header">
         <h1>🔐 Verify Your Account</h1>
-        <p>Harvest Direct - Fresh from Farm to Table</p>
+        <p>${siteInfo.siteName} - ${siteInfo.siteTagline}</p>
       </div>
       <div class="content">
         <h2>Welcome ${user.name}!</h2>
-        <p>Thank you for creating an account with Harvest Direct. To complete your registration, please verify your email address.</p>
+        <p>Thank you for creating an account with ${siteInfo.siteName}. To complete your registration, please verify your email address.</p>
 
         <div style="text-align: center;">
           <a href="${resetUrl}" class="verify-button">Verify My Account</a>
@@ -338,7 +372,7 @@ class EmailService {
         <p>After verification, you'll have full access to our platform to enjoy fresh farm products.</p>
 
         <div class="footer">
-          <p>Best regards,<br>The Harvest Direct Team</p>
+          <p>Best regards,<br>The ${siteInfo.siteName} Team</p>
           <p><small>This is an automated email. Please do not reply to this message.</small></p>
         </div>
       </div>
@@ -350,7 +384,7 @@ class EmailService {
       const mail = await this.transporter.sendMail({
         from: `"${this.fromName}" <${this.from}>`,
         to: user.email,
-        subject: "🔐 Verify Your Account",
+        subject: `🔐 Verify Your ${siteInfo.siteName} Account`,
         html,
       });
       console.log("Registration email sent successfully:", mail);
@@ -359,8 +393,8 @@ class EmailService {
     }
   }
   async sendEmailChangeVerification(user: User, newEmail: string, verificationToken: string): Promise<void> {
-    const baseUrl = process.env.REPLIT_DEV_DOMAIN ? `https://${process.env.REPLIT_DEV_DOMAIN}` : 'http://localhost:5000';
-    const verificationUrl = `${baseUrl}/verify-email-change?token=${verificationToken}`;
+    const siteInfo = await this.getSiteInfo();
+    const verificationUrl = `${siteInfo.baseUrl}/verify-email-change?token=${verificationToken}`;
 
     const html = `
       <!DOCTYPE html>
@@ -384,11 +418,11 @@ class EmailService {
         <div class="container">
           <div class="header">
             <h1>📧 Email Change Verification</h1>
-            <p>Freshly Rooted - Fresh from Farm to Table</p>
+            <p>${siteInfo.siteName} - ${siteInfo.siteTagline}</p>
           </div>
           <div class="content">
             <h2>Hello ${user.name}!</h2>
-            <p>We received a request to change the email address associated with your Freshly Rooted account.</p>
+            <p>We received a request to change the email address associated with your ${siteInfo.siteName} account.</p>
             
             <div class="info">
               <strong>📋 Change Details:</strong>
@@ -421,7 +455,7 @@ class EmailService {
             <p>If you're having trouble clicking the button, contact our support team.</p>
             
             <div class="footer">
-              <p>Best regards,<br>The Harvest Direct Team</p>
+              <p>Best regards,<br>The ${siteInfo.siteName} Team</p>
               <p><small>This is an automated email. Please do not reply to this message.</small></p>
             </div>
           </div>
@@ -434,7 +468,7 @@ class EmailService {
       const mail = await this.transporter.sendMail({
         from: `"${this.fromName}" <${this.from}>`,
         to: user.email, // Send to current email address
-        subject: "📧 Verify Your Email Change Request - Harvest Direct",
+        subject: `📧 Verify Your Email Change Request - ${siteInfo.siteName}`,
         html,
       });
       console.log("Email change verification sent successfully:", mail);
@@ -455,4 +489,5 @@ class EmailService {
   }
 }
 
-export const emailService = new EmailService();
+// EmailService will be initialized in the main server file with the storage callback
+export { EmailService };

@@ -7,7 +7,7 @@ import jwt from "jsonwebtoken";
 import * as crypto from "crypto";
 import * as nodemailer from "nodemailer";
 import Razorpay from "razorpay";
-import { emailService } from "./emailService";
+import { EmailService } from "./emailService";
 import { indiaPostService } from "./indiaPostApi";
 
 import { smsService } from "./smsService";
@@ -68,6 +68,7 @@ let razorpay: Razorpay;
 
 // Email configuration
 let transporter: nodemailer.Transporter;
+let emailService: InstanceType<typeof EmailService>;
 
 // Auth middleware - Proper JWT verification
 const authenticate = async (
@@ -111,6 +112,9 @@ const authenticate = async (
 };
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Initialize EmailService with storage callback
+  emailService = new EmailService(() => storage.getAllSiteSettings());
+  
   // API route prefix
   const apiPrefix = "/api";
 
