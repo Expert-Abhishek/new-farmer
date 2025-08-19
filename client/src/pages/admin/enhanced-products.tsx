@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import AdminAuthWrapper from "@/components/admin/AdminAuthWrapper";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -122,7 +122,7 @@ const variantSchema = z.object({
     )
       return null;
     const numVal = typeof val === "string" ? Number(val) : val;
-    return isNaN(numVal) ? null : numVal;
+    return isNaN(numVal as number) ? null : numVal;
   }, z.number().min(0).nullable().optional()),
   quantity: z.number().min(0.01, "Quantity must be greater than 0"),
   unit: z.string().min(1, "Please select a unit"),
@@ -559,17 +559,17 @@ export default function EnhancedAdminProducts() {
     setIsEditDialogOpen(true);
   };
 
-  // Handle primary image upload
-  const handlePrimaryImageUpload = (
+  // Handle primary image upload - memoized to prevent infinite loops
+  const handlePrimaryImageUpload = useCallback((
     imagePath: string,
     thumbnailPath: string,
   ) => {
     setPrimaryImage(imagePath);
     form.setValue("imageUrl", imagePath);
-  };
+  }, [form]);
 
-  // Handle additional images upload
-  const handleAdditionalImageUpload = (
+  // Handle additional images upload - memoized to prevent infinite loops
+  const handleAdditionalImageUpload = useCallback((
     imagePath: string,
     thumbnailPath: string,
   ) => {
@@ -583,10 +583,10 @@ export default function EnhancedAdminProducts() {
       : [];
     imageArray.push(imagePath);
     form.setValue("imageUrls", imageArray.join(","));
-  };
+  }, [form]);
 
-  // Handle image removal
-  const handleImageRemove = (imagePath: string) => {
+  // Handle image removal - memoized to prevent infinite loops
+  const handleImageRemove = useCallback((imagePath: string) => {
     if (imagePath === primaryImage) {
       setPrimaryImage("");
       form.setValue("imageUrl", "");
@@ -601,7 +601,7 @@ export default function EnhancedAdminProducts() {
         : [];
       form.setValue("imageUrls", imageArray.join(","));
     }
-  };
+  }, [primaryImage, form]);
 
   // Set up form for creating
   const setupCreateForm = () => {

@@ -36,7 +36,7 @@ export function AddToCartButton({
   const { isAuthenticated } = useAuth();
   const [location, navigate] = useLocation();
   // Set max quantity to the available stock (or specified max)
-  const maxQuantity = max !== undefined ? max : product.stockQuantity;
+  const maxQuantity = max !== undefined ? max : 100;
 
   const handleAddToCart = async () => {
     if (!isAuthenticated && location !== "/login") {
@@ -103,9 +103,8 @@ export function AddToCartButton({
         } ${className}`}
         disabled={isAdding}
       >
-        {showIcon && <Plus className="h-4 w-4" />}
-        {/* abhi  */}
-        {/* Add to Basket */}
+        {showIcon && <Plus className="h-4 w-4 mr-2" />}
+        Add to Basket
       </Button>
     </div>
   );
