@@ -32,7 +32,7 @@ export default function ChangeNumberUser() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          mobile: user?.mobile,
+          mobile: (user as any)?.mobile,
           purpose: "change_number",
         }),
       });
