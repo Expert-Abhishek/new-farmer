@@ -419,9 +419,8 @@ export default function Account() {
   }
 
   return (
-    // <Layout>
-    // abhi
-    <div className="min-h-screen bg-background relative top-12  ">
+    <Layout>
+      <div className="min-h-screen bg-background pt-4">
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         <h1 className="text-3xl font-bold mb-8 text-foreground">My Account</h1>
 
@@ -938,7 +937,7 @@ export default function Account() {
           productName={ratingModal.productName}
         />
       </div>
-    </div>
-    // </Layout>
+      </div>
+    </Layout>
   );
 }
