@@ -184,7 +184,7 @@ export default function EnhancedAdminProducts() {
   const [productToDelete, setProductToDelete] =
     useState<EnhancedProduct | null>(null);
   const [productToEdit, setProductToEdit] = useState<EnhancedProduct | null>(
-    null,
+    null
   );
   const [categories, setCategories] = useState<string[]>([]);
   const [mainCategories, setMainCategories] = useState<
@@ -194,7 +194,7 @@ export default function EnhancedAdminProducts() {
     { id: number; name: string; slug: string; parentId: number }[]
   >([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(
-    null,
+    null
   );
   const [farmers, setFarmers] = useState<
     { id: number; name: string; location: string }[]
@@ -272,7 +272,7 @@ export default function EnhancedAdminProducts() {
             Authorization: `Bearer ${token}`,
             "Cache-Control": "no-cache",
           },
-        },
+        }
       );
 
       if (!response.ok) {
@@ -323,7 +323,7 @@ export default function EnhancedAdminProducts() {
           headers: {
             "Cache-Control": "no-cache",
           },
-        },
+        }
       );
 
       if (response.ok) {
@@ -369,7 +369,7 @@ export default function EnhancedAdminProducts() {
             id: farmer.id,
             name: farmer.name,
             location: farmer.location || "",
-          })),
+          }))
         );
       }
     } catch (err) {
@@ -389,7 +389,7 @@ export default function EnhancedAdminProducts() {
   // Handle category change to load subcategories
   const handleCategoryChange = (categoryName: string) => {
     const selectedCategory = mainCategories.find(
-      (cat) => cat.name === categoryName,
+      (cat) => cat.name === categoryName
     );
     if (selectedCategory) {
       setSelectedCategoryId(selectedCategory.id);
@@ -408,8 +408,8 @@ export default function EnhancedAdminProducts() {
       product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       product.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
       product.variants?.some((variant) =>
-        variant.sku?.toLowerCase().includes(searchTerm.toLowerCase()),
-      ),
+        variant.sku?.toLowerCase().includes(searchTerm.toLowerCase())
+      )
   );
 
   // Handle page change
@@ -507,7 +507,7 @@ export default function EnhancedAdminProducts() {
   const setupEditForm = (product: EnhancedProduct) => {
     // First, find the category to get its subcategories
     const selectedCategory = mainCategories.find(
-      (cat) => cat.name === product.category,
+      (cat) => cat.name === product.category
     );
     if (selectedCategory) {
       setSelectedCategoryId(selectedCategory.id);
@@ -560,48 +560,51 @@ export default function EnhancedAdminProducts() {
   };
 
   // Handle primary image upload - memoized to prevent infinite loops
-  const handlePrimaryImageUpload = useCallback((
-    imagePath: string,
-    thumbnailPath: string,
-  ) => {
-    setPrimaryImage(imagePath);
-    form.setValue("imageUrl", imagePath);
-  }, [form]);
+  const handlePrimaryImageUpload = useCallback(
+    (imagePath: string, thumbnailPath: string) => {
+      setPrimaryImage(imagePath);
+      form.setValue("imageUrl", imagePath);
+    },
+    [form]
+  );
 
   // Handle additional images upload - memoized to prevent infinite loops
-  const handleAdditionalImageUpload = useCallback((
-    imagePath: string,
-    thumbnailPath: string,
-  ) => {
-    setUploadedImages((prev) => [...prev, imagePath]);
-    const currentImages = form.getValues("imageUrls");
-    const imageArray = currentImages
-      ? currentImages
-          .split(",")
-          .map((img) => img.trim())
-          .filter((img) => img)
-      : [];
-    imageArray.push(imagePath);
-    form.setValue("imageUrls", imageArray.join(","));
-  }, [form]);
-
-  // Handle image removal - memoized to prevent infinite loops
-  const handleImageRemove = useCallback((imagePath: string) => {
-    if (imagePath === primaryImage) {
-      setPrimaryImage("");
-      form.setValue("imageUrl", "");
-    } else {
-      setUploadedImages((prev) => prev.filter((img) => img !== imagePath));
+  const handleAdditionalImageUpload = useCallback(
+    (imagePath: string, thumbnailPath: string) => {
+      setUploadedImages((prev) => [...prev, imagePath]);
       const currentImages = form.getValues("imageUrls");
       const imageArray = currentImages
         ? currentImages
             .split(",")
             .map((img) => img.trim())
-            .filter((img) => img && img !== imagePath)
+            .filter((img) => img)
         : [];
+      imageArray.push(imagePath);
       form.setValue("imageUrls", imageArray.join(","));
-    }
-  }, [primaryImage, form]);
+    },
+    [form]
+  );
+
+  // Handle image removal - memoized to prevent infinite loops
+  const handleImageRemove = useCallback(
+    (imagePath: string) => {
+      if (imagePath === primaryImage) {
+        setPrimaryImage("");
+        form.setValue("imageUrl", "");
+      } else {
+        setUploadedImages((prev) => prev.filter((img) => img !== imagePath));
+        const currentImages = form.getValues("imageUrls");
+        const imageArray = currentImages
+          ? currentImages
+              .split(",")
+              .map((img) => img.trim())
+              .filter((img) => img && img !== imagePath)
+          : [];
+        form.setValue("imageUrls", imageArray.join(","));
+      }
+    },
+    [primaryImage, form]
+  );
 
   // Set up form for creating
   const setupCreateForm = () => {
@@ -716,7 +719,7 @@ export default function EnhancedAdminProducts() {
           responseData.message ||
             (productToEdit
               ? "Failed to update product"
-              : "Failed to create product"),
+              : "Failed to create product")
         );
       }
 
@@ -976,7 +979,7 @@ export default function EnhancedAdminProducts() {
                               onClick={() =>
                                 handleToggleFeatured(
                                   product.id,
-                                  Boolean(product.featured),
+                                  Boolean(product.featured)
                                 )
                               }
                             >
@@ -1029,7 +1032,7 @@ export default function EnhancedAdminProducts() {
                   Showing {(currentPage - 1) * productsPerPage + 1} to{" "}
                   {Math.min(
                     currentPage * productsPerPage,
-                    products.length * totalPages,
+                    products.length * totalPages
                   )}{" "}
                   of {products.length * totalPages} products
                 </div>
@@ -1345,7 +1348,7 @@ export default function EnhancedAdminProducts() {
                                       field.onChange(
                                         e.target.value
                                           ? e.target.valueAsNumber
-                                          : null,
+                                          : null
                                       )
                                     }
                                   />
@@ -1470,7 +1473,7 @@ export default function EnhancedAdminProducts() {
                             size="sm"
                             onClick={() => {
                               const currentVariant = form.getValues(
-                                `variants.${index}`,
+                                `variants.${index}`
                               );
                               // If editing an existing product and variant has an ID, show confirmation
                               if (
@@ -1973,12 +1976,12 @@ export default function EnhancedAdminProducts() {
                                       >
                                         {orderId}
                                       </Badge>
-                                    ),
+                                    )
                                   )}
                                 </div>
                               </TableCell>
                             </TableRow>
-                          ),
+                          )
                         )}
                       </TableBody>
                     </Table>

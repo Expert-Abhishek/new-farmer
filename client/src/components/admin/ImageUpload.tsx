@@ -1,9 +1,9 @@
-import { useState, useRef } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Progress } from '@/components/ui/progress';
-import { X, Upload, Image as ImageIcon } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
+import { useState, useRef } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Progress } from "@/components/ui/progress";
+import { X, Upload, Image as ImageIcon } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 
 interface ImageUploadProps {
   onImageUpload: (imagePath: string, thumbnailPath: string) => void;
@@ -18,7 +18,7 @@ export default function ImageUpload({
   onImageRemove,
   existingImages = [],
   maxImages = 5,
-  multiple = false
+  multiple = false,
 }: ImageUploadProps) {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -29,37 +29,41 @@ export default function ImageUpload({
     if (!files || files.length === 0) return;
 
     const fileArray = Array.from(files);
-    
+
     // Check file count limit
     if (existingImages.length + fileArray.length > maxImages) {
       toast({
         title: "Too many files",
         description: `Maximum ${maxImages} images allowed`,
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
 
     // Validate file types
-    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-    const invalidFiles = fileArray.filter(file => !validTypes.includes(file.type));
-    
+    const validTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+    const invalidFiles = fileArray.filter(
+      (file) => !validTypes.includes(file.type)
+    );
+
     if (invalidFiles.length > 0) {
       toast({
         title: "Invalid file type",
         description: "Only JPEG, PNG, and WebP files are allowed",
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
 
     // Check file sizes (5MB limit)
-    const oversizedFiles = fileArray.filter(file => file.size > 5 * 1024 * 1024);
+    const oversizedFiles = fileArray.filter(
+      (file) => file.size > 5 * 1024 * 1024
+    );
     if (oversizedFiles.length > 0) {
       toast({
         title: "File too large",
         description: "Maximum file size is 5MB",
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
@@ -71,13 +75,13 @@ export default function ImageUpload({
       if (multiple && fileArray.length > 1) {
         // Upload multiple images
         const formData = new FormData();
-        fileArray.forEach(file => {
-          formData.append('images', file);
+        fileArray.forEach((file) => {
+          formData.append("images", file);
         });
 
-        const response = await fetch('/api/images/upload/product-images', {
-          method: 'POST',
-          body: formData
+        const response = await fetch("/api/images/upload/product-images", {
+          method: "POST",
+          body: formData,
         });
 
         const result = await response.json();
@@ -88,7 +92,7 @@ export default function ImageUpload({
           });
           toast({
             title: "Success",
-            description: result.message
+            description: result.message,
           });
         } else {
           throw new Error(result.message);
@@ -96,11 +100,11 @@ export default function ImageUpload({
       } else {
         // Upload single image
         const formData = new FormData();
-        formData.append('image', fileArray[0]);
+        formData.append("image", fileArray[0]);
 
-        const response = await fetch('/api/images/upload/product-image', {
-          method: 'POST',
-          body: formData
+        const response = await fetch("/api/images/upload/product-image", {
+          method: "POST",
+          body: formData,
         });
 
         const result = await response.json();
@@ -109,24 +113,25 @@ export default function ImageUpload({
           onImageUpload(result.imagePath, result.thumbnailPath);
           toast({
             title: "Success",
-            description: result.message
+            description: result.message,
           });
         } else {
           throw new Error(result.message);
         }
       }
     } catch (error) {
-      console.error('Upload error:', error);
+      console.error("Upload error:", error);
       toast({
         title: "Upload failed",
-        description: error instanceof Error ? error.message : "Failed to upload image",
-        variant: "destructive"
+        description:
+          error instanceof Error ? error.message : "Failed to upload image",
+        variant: "destructive",
       });
     } finally {
       setUploading(false);
       setUploadProgress(0);
       if (fileInputRef.current) {
-        fileInputRef.current.value = '';
+        fileInputRef.current.value = "";
       }
     }
   };
@@ -149,12 +154,12 @@ export default function ImageUpload({
 
   const removeImage = async (imagePath: string) => {
     try {
-      const response = await fetch('/api/images/delete/product-image', {
-        method: 'DELETE',
+      const response = await fetch("/api/images/delete/product-image", {
+        method: "DELETE",
         headers: {
-          'Content-Type': 'application/json'
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ imagePath })
+        body: JSON.stringify({ imagePath }),
       });
 
       const result = await response.json();
@@ -163,17 +168,17 @@ export default function ImageUpload({
         onImageRemove?.(imagePath);
         toast({
           title: "Success",
-          description: "Image deleted successfully"
+          description: "Image deleted successfully",
         });
       } else {
         throw new Error(result.message);
       }
     } catch (error) {
-      console.error('Delete error:', error);
+      console.error("Delete error:", error);
       toast({
         title: "Delete failed",
         description: "Failed to delete image",
-        variant: "destructive"
+        variant: "destructive",
       });
     }
   };
@@ -183,10 +188,10 @@ export default function ImageUpload({
       {/* Upload Area */}
       <div
         className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
-          dragActive 
-            ? 'border-primary bg-primary/5' 
-            : 'border-gray-300 hover:border-gray-400'
-        } ${uploading ? 'opacity-50 pointer-events-none' : ''}`}
+          dragActive
+            ? "border-primary bg-primary/5"
+            : "border-gray-300 hover:border-gray-400"
+        } ${uploading ? "opacity-50 pointer-events-none" : ""}`}
         onDrop={handleDrop}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
@@ -194,9 +199,13 @@ export default function ImageUpload({
         <div className="flex flex-col items-center space-y-4">
           <Upload className="h-12 w-12 text-gray-400" />
           <div>
-            <p className="text-lg font-medium">Drop images here or click to upload</p>
+            <p className="text-lg font-medium">
+              Drop images here or click to upload
+            </p>
             <p className="text-sm text-gray-500">
-              {multiple ? `Upload up to ${maxImages} images` : 'Upload a single image'}
+              {multiple
+                ? `Upload up to ${maxImages} images`
+                : "Upload a single image"}
             </p>
             <p className="text-xs text-gray-400 mt-1">
               Supported formats: JPEG, PNG, WebP (max 5MB each)
@@ -243,11 +252,13 @@ export default function ImageUpload({
             {existingImages.map((imagePath, index) => (
               <div key={index} className="relative group">
                 <img
-                  src={imagePath}
+                  src={`${import.meta.env.VITE_BASE_URL}${imagePath}`}
                   alt={`Product image ${index + 1}`}
                   className="w-full h-24 object-cover rounded-lg border"
                   onError={(e) => {
-                    (e.target as HTMLImageElement).src = '/uploads/products/placeholder.webp';
+                    (e.target as HTMLImageElement).src = `${
+                      import.meta.env.VITE_BASE_URL
+                    }/uploads/products/placeholder.webp`;
                   }}
                 />
                 {onImageRemove && (
