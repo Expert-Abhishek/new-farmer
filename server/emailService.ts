@@ -359,9 +359,8 @@ class EmailService {
     }
   }
   async sendEmailChangeVerification(user: User, newEmail: string, verificationToken: string): Promise<void> {
-    const verificationUrl = `${
-      process.env.VITE_BASE_URL || "http://localhost:5000"
-    }/verify-email-change?token=${verificationToken}`;
+    const baseUrl = process.env.REPLIT_DEV_DOMAIN ? `https://${process.env.REPLIT_DEV_DOMAIN}` : 'http://localhost:5000';
+    const verificationUrl = `${baseUrl}/verify-email-change?token=${verificationToken}`;
 
     const html = `
       <!DOCTYPE html>
