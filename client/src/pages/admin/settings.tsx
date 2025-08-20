@@ -20,6 +20,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Save, Store, Globe, Upload, X, Image } from "lucide-react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import MainLoader from "@/utils/MainLoader";
+import { getImageUrl } from "@/utils/imageUtils";
+import placeholderImage from "../../../../public/uploads/products/No-Image.png";
 
 interface SiteSetting {
   id: number;
@@ -321,19 +323,30 @@ export default function AdminSettings() {
             <div className="space-y-4">
               <Label>Site Logo (Optional)</Label>
               
-              {/* Logo Preview */}
-              {logoPreview && (
+              {/* Logo Preview - Same pattern as enhanced products table */}
+              {(logoPreview || settingsMap.site_logo) && (
                 <div className="flex items-center gap-4 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
-                  <img
-                    src={logoPreview}
-                    alt="Logo preview"
-                    className="h-16 w-16 object-contain border rounded"
-                  />
+                  <div className="relative w-16 h-16 flex-shrink-0">
+                    <img
+                      src={logoPreview || getImageUrl(settingsMap.site_logo)}
+                      alt="Logo preview"
+                      className="w-full h-full object-contain border rounded"
+                      onError={(e) => {
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src = placeholderImage;
+                      }}
+                    />
+                  </div>
                   <div className="flex-1">
-                    <p className="text-sm font-medium">Current Logo</p>
+                    <p className="text-sm font-medium">Current Site Logo</p>
                     <p className="text-xs text-muted-foreground">
                       {logoFile ? 'New upload pending save' : 'Currently active'}
                     </p>
+                    {settingsMap.site_logo && (
+                      <p className="text-xs text-muted-foreground mt-1 truncate">
+                        {settingsMap.site_logo}
+                      </p>
+                    )}
                   </div>
                   <Button
                     type="button"

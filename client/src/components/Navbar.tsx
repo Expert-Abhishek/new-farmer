@@ -6,6 +6,8 @@ import { useSiteSettings } from "@/context/SiteContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, ShoppingBasket, Menu, X, User } from "lucide-react";
+import { getImageUrl } from "@/utils/imageUtils";
+import placeholderImage from "../../../public/uploads/products/No-Image.png";
 
 export default function Navbar() {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
@@ -82,9 +84,13 @@ export default function Navbar() {
           <Link href="/" className="flex items-center space-x-3">
             {settings.siteLogo && (
               <img
-                src={settings.siteLogo}
+                src={getImageUrl(settings.siteLogo)}
                 alt={settings.siteName}
                 className="h-8 w-8 object-contain"
+                onError={(e) => {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = placeholderImage;
+                }}
               />
             )}
             <span className="text-forest font-heading text-2xl font-bold">
