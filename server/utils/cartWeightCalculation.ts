@@ -1,7 +1,7 @@
 import { db } from "../db";
 import { eq, sql } from "drizzle-orm";
 import { cartItems, productVariants } from "../../shared/schema";
-import { calculateShippingCost } from "./weightCalculation";
+import { calculateShippingCost, convertToKilograms } from "./weightCalculation";
 
 /**
  * Calculate total weight for all items in a cart
@@ -10,16 +10,27 @@ import { calculateShippingCost } from "./weightCalculation";
  */
 export async function calculateCartTotalWeight(cartId: number): Promise<number> {
   try {
-    // Query to get total weight by joining cart_items with product_variants
-    const result = await db
+    // Query to get all cart items with their weights and units
+    const items = await db
       .select({
-        totalWeight: sql<number>`COALESCE(SUM(${cartItems.quantity} * ${productVariants.weight}), 0)`
+        quantity: cartItems.quantity,
+        weight: productVariants.weight,
+        unit: productVariants.unit
       })
       .from(cartItems)
       .innerJoin(productVariants, eq(cartItems.variantId, productVariants.id))
       .where(eq(cartItems.cartId, cartId));
 
-    return result[0]?.totalWeight || 0;
+    // Calculate total weight by converting each item to kg
+    let totalWeightKg = 0;
+    for (const item of items) {
+      const weightInKg = convertToKilograms(item.weight || 0, item.unit || 'kg');
+      totalWeightKg += item.quantity * weightInKg;
+      console.log(`Item: ${item.quantity} x ${item.weight}${item.unit} = ${item.quantity * weightInKg}kg`);
+    }
+
+    console.log(`Cart ${cartId} total weight calculation: ${totalWeightKg}kg`);
+    return totalWeightKg;
   } catch (error) {
     console.error(`Error calculating total weight for cart ${cartId}:`, error);
     return 0;

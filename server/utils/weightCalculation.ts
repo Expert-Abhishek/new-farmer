@@ -3,6 +3,25 @@ import { eq, sql } from "drizzle-orm";
 import { orders, orderItems, productVariants } from "../../shared/schema.ts";
 
 /**
+ * Convert weight to kilograms based on unit
+ * @param weight - Weight value
+ * @param unit - Unit (g, l, kg)
+ * @returns Weight in kilograms
+ */
+export function convertToKilograms(weight: number, unit: string): number {
+  switch (unit.toLowerCase()) {
+    case 'g': // grams to kg
+      return weight / 1000;
+    case 'l': // liters treated same as kg for shipping
+    case 'kg': // already in kg
+      return weight;
+    default:
+      console.warn(`Unknown unit: ${unit}, treating as kg`);
+      return weight;
+  }
+}
+
+/**
  * Calculate shipping cost based on weight
  * @param weightInKg - Total weight in kilograms
  * @returns Shipping cost in rupees
@@ -33,16 +52,25 @@ export function calculateShippingCost(weightInKg: number): number {
  */
 export async function calculateOrderTotalWeight(orderId: number): Promise<number> {
   try {
-    // Query to get total weight by joining order_items with product_variants
-    const result = await db
+    // Query to get all items with their weights and units
+    const items = await db
       .select({
-        totalWeight: sql<number>`COALESCE(SUM(${orderItems.quantity} * ${productVariants.weight}), 0)`
+        quantity: orderItems.quantity,
+        weight: productVariants.weight,
+        unit: productVariants.unit
       })
       .from(orderItems)
       .innerJoin(productVariants, eq(orderItems.variantId, productVariants.id))
       .where(eq(orderItems.orderId, orderId));
 
-    return result[0]?.totalWeight || 0;
+    // Calculate total weight by converting each item to kg
+    let totalWeightKg = 0;
+    for (const item of items) {
+      const weightInKg = convertToKilograms(item.weight || 0, item.unit || 'kg');
+      totalWeightKg += item.quantity * weightInKg;
+    }
+
+    return totalWeightKg;
   } catch (error) {
     console.error(`Error calculating total weight for order ${orderId}:`, error);
     return 0;
