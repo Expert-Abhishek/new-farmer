@@ -563,6 +563,7 @@ export default function EnhancedAdminProducts() {
   // Handle primary image upload - memoized to prevent infinite loops
   const handlePrimaryImageUpload = useCallback(
     (imagePath: string, thumbnailPath: string) => {
+      console.log("Primary image upload:", imagePath);
       setPrimaryImage(imagePath);
       form.setValue("imageUrl", imagePath);
     },
@@ -572,6 +573,7 @@ export default function EnhancedAdminProducts() {
   // Handle additional images upload - memoized to prevent infinite loops
   const handleAdditionalImageUpload = useCallback(
     (imagePath: string, thumbnailPath: string) => {
+      console.log("Additional image upload:", imagePath);
       setUploadedImages((prev) => [...prev, imagePath]);
       const currentImages = form.getValues("imageUrls");
       const imageArray = currentImages
@@ -589,11 +591,20 @@ export default function EnhancedAdminProducts() {
   // Handle image removal - memoized to prevent infinite loops
   const handleImageRemove = useCallback(
     (imagePath: string) => {
-      if (imagePath === primaryImage) {
-        setPrimaryImage("");
-        form.setValue("imageUrl", "");
-      } else {
-        setUploadedImages((prev) => prev.filter((img) => img !== imagePath));
+      console.log("Image removal request:", imagePath);
+      // Use functional state update to avoid dependency on primaryImage
+      setPrimaryImage((prev) => {
+        if (imagePath === prev) {
+          form.setValue("imageUrl", "");
+          return "";
+        }
+        return prev;
+      });
+      
+      // Always update uploadedImages to remove the image
+      setUploadedImages((prev) => {
+        const filtered = prev.filter((img) => img !== imagePath);
+        // Update form value with filtered images
         const currentImages = form.getValues("imageUrls");
         const imageArray = currentImages
           ? currentImages
@@ -602,9 +613,10 @@ export default function EnhancedAdminProducts() {
               .filter((img) => img && img !== imagePath)
           : [];
         form.setValue("imageUrls", imageArray.join(","));
-      }
+        return filtered;
+      });
     },
-    [primaryImage, form]
+    [form]
   );
 
   // Set up form for creating
