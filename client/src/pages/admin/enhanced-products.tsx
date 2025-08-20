@@ -126,6 +126,7 @@ const variantSchema = z.object({
   }, z.number().min(0).nullable().optional()),
   quantity: z.number().min(0.01, "Quantity must be greater than 0"),
   unit: z.string().min(1, "Please select a unit"),
+  weight: z.number().min(0.01, "Weight must be greater than 0"),
   stockQuantity: z.number().int().min(0, "Stock quantity must be 0 or greater"),
   sku: z.string().min(1, "SKU is required"),
 });
@@ -1405,12 +1406,9 @@ export default function EnhancedAdminProducts() {
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                  <SelectItem value="kg">kg</SelectItem>
                                   <SelectItem value="g">g</SelectItem>
-                                  <SelectItem value="lb">lb</SelectItem>
-                                  <SelectItem value="oz">oz</SelectItem>
-                                  <SelectItem value="piece">piece</SelectItem>
-                                  <SelectItem value="bunch">bunch</SelectItem>
+                                  <SelectItem value="l">l</SelectItem>
+                                  <SelectItem value="kg">kg</SelectItem>
                                 </SelectContent>
                               </Select>
                               <FormMessage />
@@ -1436,6 +1434,32 @@ export default function EnhancedAdminProducts() {
                                   value={field.value || ""}
                                   onChange={(e) =>
                                     field.onChange(parseInt(e.target.value))
+                                  }
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        {/* Weight */}
+                        <FormField
+                          control={form.control}
+                          name={`variants.${index}.weight`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>
+                                Weight (kg) <span className="text-red-500">*</span>
+                              </FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="number"
+                                  step="0.01"
+                                  placeholder="0.5"
+                                  min="0"
+                                  value={field.value || ""}
+                                  onChange={(e) =>
+                                    field.onChange(e.target.valueAsNumber)
                                   }
                                 />
                               </FormControl>
@@ -1507,6 +1531,7 @@ export default function EnhancedAdminProducts() {
                         discountPrice: undefined,
                         quantity: 1,
                         unit: "kg",
+                        weight: 0.5,
                         stockQuantity: 0,
                         sku: "",
                       })

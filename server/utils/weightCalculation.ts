@@ -10,16 +10,19 @@ import { orders, orderItems, productVariants } from "../../shared/schema.ts";
 export function calculateShippingCost(weightInKg: number): number {
   if (weightInKg <= 0) return 0;
   
-  if (weightInKg <= 0.5) {
-    return 45; // Below 0.5kg = ₹45
-  } else if (weightInKg <= 1.0) {
+  if (weightInKg < 0.5) {
+    return 45; // Less than 0.5kg = ₹45
+  } else if (weightInKg >= 0.5 && weightInKg <= 1.0) {
     return 82; // 0.5kg to 1kg = ₹82
+  } else if (weightInKg > 1.0 && weightInKg <= 1.5) {
+    return 100; // 1kg to 1.5kg = ₹100
+  } else if (weightInKg > 1.5 && weightInKg <= 2.0) {
+    return 120; // 1.5kg to 2kg = ₹120
   } else {
-    // For weights above 1kg, you might want to add more tiers
-    // For now, let's assume ₹82 + ₹50 for each additional 0.5kg
-    const additionalWeight = weightInKg - 1.0;
-    const additionalCost = Math.ceil(additionalWeight / 0.5) * 50;
-    return 82 + additionalCost;
+    // Above 2kg: ₹120 + ₹82 per additional kg
+    const additionalWeight = weightInKg - 2.0;
+    const additionalCost = Math.ceil(additionalWeight) * 82;
+    return 120 + additionalCost;
   }
 }
 
