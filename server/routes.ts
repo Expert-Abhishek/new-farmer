@@ -56,6 +56,8 @@ import {
 import adminRouter from "./admin";
 import imageRouter from "./imageRoutes";
 import { exportDatabase, exportTable } from "./databaseExport";
+import { updateOrderWeightAndShipping, calculateShippingCost } from "./utils/weightCalculation";
+import { calculateCartWeightAndShipping } from "./utils/cartWeightCalculation";
 import path from "path";
 import express from "express";
 
@@ -573,6 +575,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ message: "Cart cleared successfully" });
     } catch (error) {
       res.status(500).json({ message: "Failed to clear cart" });
+    }
+  });
+
+  // ✅ Get cart shipping calculation based on weight
+  app.get(`${apiPrefix}/cart/shipping`, async (req, res) => {
+    try {
+      const sessionId = (req as any).sessionId;
+      
+      // Get cart to find cart ID
+      const cart = await storage.getCart(sessionId);
+      
+      if (!cart || !cart.items || cart.items.length === 0) {
+        return res.json({
+          totalWeight: 0,
+          shippingCost: 0,
+          message: "Cart is empty"
+        });
+      }
+
+      // Calculate weight and shipping cost
+      const result = await calculateCartWeightAndShipping(cart.id);
+      
+      res.json({
+        cartId: cart.id,
+        totalWeight: result.totalWeight,
+        shippingCost: result.shippingCost,
+        itemCount: cart.items.length,
+        success: result.success
+      });
+    } catch (error) {
+      console.error("Cart shipping calculation error:", error);
+      res.status(500).json({ 
+        message: "Failed to calculate shipping cost",
+        totalWeight: 0,
+        shippingCost: 0,
+        success: false
+      });
     }
   });
 
@@ -1471,6 +1510,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
             quantity: item.quantity,
             price: item.variant.discountPrice ?? item.variant.price, // ✅ final price
           });
+        }
+
+        // ✅ Calculate and update order weight and shipping cost
+        try {
+          const weightResult = await updateOrderWeightAndShipping(order.id);
+          console.log(`Order ${order.id} weight calculation:`, weightResult);
+          
+          if (weightResult.success) {
+            // Update the order object with the calculated values for email notification
+            order.totalWeight = weightResult.totalWeight;
+            order.shippingCost = weightResult.shippingCost;
+          }
+        } catch (weightError) {
+          console.error(`Failed to calculate weight for order ${order.id}:`, weightError);
+          // Continue with order processing even if weight calculation fails
         }
 
         // Record payment (only for Razorpay)

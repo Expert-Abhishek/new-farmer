@@ -43,6 +43,7 @@ interface CartContextType {
   shipping: number;
   total: number;
   totalItems: number;
+  totalWeight: number; // Total weight of cart items
   sessionId: string;
 }
 
@@ -53,7 +54,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [sessionId, setSessionId] = useState("");
+  const [shipping, setShipping] = useState(0); // Weight-based shipping cost
+  const [totalWeight, setTotalWeight] = useState(0); // Total cart weight
   const [location, navigate] = useLocation();
+  
   const subtotal = cartItems.reduce(
     (total, item) =>
       total +
@@ -61,7 +65,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
     0
   );
 
-  const shipping = subtotal > 0 ? 4.99 : 0;
   const total = subtotal + shipping;
   const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -93,14 +96,48 @@ export function CartProvider({ children }: { children: ReactNode }) {
       console.log("Fetched cart data:", data);
       if (data && data.items) {
         setCartItems(data.items);
+        // Fetch shipping cost if cart has items
+        if (data.items.length > 0) {
+          fetchShippingCost(id);
+        } else {
+          setShipping(0);
+          setTotalWeight(0);
+        }
       } else {
         setCartItems([]);
+        setShipping(0);
+        setTotalWeight(0);
       }
     } catch (error) {
       console.error("Error fetching cart:", error);
       setCartItems([]);
+      setShipping(0);
+      setTotalWeight(0);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Fetch weight-based shipping cost
+  const fetchShippingCost = async (id: string) => {
+    try {
+      const response = await fetch(`/api/cart/shipping`, {
+        headers: {
+          "x-session-id": id,
+        },
+      });
+      const data = await response.json();
+      
+      if (data.success !== false) {
+        setShipping(data.shippingCost || 0);
+        setTotalWeight(data.totalWeight || 0);
+        console.log(`Cart shipping: ₹${data.shippingCost}, Weight: ${data.totalWeight}kg`);
+      }
+    } catch (error) {
+      console.error("Error fetching shipping cost:", error);
+      // Fallback to no shipping cost on error
+      setShipping(0);
+      setTotalWeight(0);
     }
   };
 
@@ -140,6 +177,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
       const data = await response.json();
       if (data && data.items) {
         setCartItems(data.items);
+        // Update shipping cost after adding item
+        if (data.items.length > 0) {
+          fetchShippingCost(sessionId);
+        }
         openCart();
       }
     } catch (error) {
@@ -176,6 +217,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
       if (data && data.items) {
         setCartItems(data.items);
+        // Update shipping cost after updating item
+        if (data.items.length > 0) {
+          fetchShippingCost(sessionId);
+        } else {
+          setShipping(0);
+          setTotalWeight(0);
+        }
       }
     } catch (error) {
       console.error("Error updating cart item:", error);
@@ -200,6 +248,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
       const data = await response.json();
       if (data && data.items) {
         setCartItems(data.items);
+        // Update shipping cost after removing item
+        if (data.items.length > 0) {
+          fetchShippingCost(sessionId);
+        } else {
+          setShipping(0);
+          setTotalWeight(0);
+        }
       }
     } catch (error) {
       console.error("Error removing from cart:", error);
@@ -220,8 +275,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
       if (response.ok) {
         setCartItems([]);
-        // Fetch updated cart data to ensure synchronization
-        await fetchCartData();
+        setShipping(0);
+        setTotalWeight(0);
       }
     } catch (error) {
       console.error("Error clearing cart:", error);
@@ -246,6 +301,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         shipping,
         total,
         totalItems,
+        totalWeight, // Add totalWeight to context
         sessionId,
       }}
     >

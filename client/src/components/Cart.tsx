@@ -18,6 +18,7 @@ export default function Cart() {
     subtotal,
     shipping,
     total,
+    totalWeight,
   } = useCart();
   console.log("debugger", cartItems);
   return (
@@ -125,7 +126,7 @@ export default function Cart() {
                           <p className="text-foreground font-medium">
                             ₹
                             {(
-                              item.variant.discountPrice * item.quantity
+                              (item.variant.discountPrice ?? item.variant.price) * item.quantity
                             ).toFixed(2)}
                           </p>
                           <span className="text-gray-500 line-through text-sm">
@@ -161,6 +162,12 @@ export default function Cart() {
                     <span className="text-foreground">Subtotal</span>
                     <span className="text-foreground font-semibold">
                       ₹{subtotal.toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between mb-2">
+                    <span className="text-foreground">Total Weight</span>
+                    <span className="text-foreground font-medium">
+                      {totalWeight.toFixed(2)} kg
                     </span>
                   </div>
                   <div className="flex justify-between mb-6">

@@ -63,6 +63,7 @@ export const insertProductVariantSchema = z.object({
   discountPrice: z.number().int().min(0, "Discount price cannot be negative").nullable().optional(),
   quantity: z.number().positive("Quantity must be greater than 0"),
   unit: z.string().min(1, "Unit is required"),
+  weight: z.number().min(0, "Weight cannot be negative").default(0), // Weight in kg
   stockQuantity: z.number().int().min(0, "Stock quantity cannot be negative"),
   sku: z.string().min(1, "SKU is required").regex(/^[A-Z0-9-_]+$/i, "SKU can only contain letters, numbers, hyphens, and underscores"),
 });
@@ -77,6 +78,7 @@ export const productVariants = pgTable("product_variants", {
   discountPrice: integer("discount_price"),
   quantity: doublePrecision("quantity").notNull(),
   unit: text("unit").notNull(),
+  weight: doublePrecision("weight").notNull().default(0), // Weight in kg
   stockQuantity: integer("stock_quantity").notNull().default(0),
   sku: text("sku").notNull().unique(),
   isDeleted: boolean("is_deleted").default(false).notNull(),
@@ -258,6 +260,8 @@ export const orders = pgTable("orders", {
   sessionId: text("session_id").notNull(),
   paymentId: text("payment_id"),
   total: doublePrecision("total").notNull(),
+  totalWeight: doublePrecision("total_weight").notNull().default(0), // Total weight in kg
+  shippingCost: doublePrecision("shipping_cost").notNull().default(0), // Shipping cost based on weight
   status: text("status").notNull().default("pending"),
 
   // ⛔ Removed legacy shipping/billing fields

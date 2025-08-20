@@ -61,9 +61,22 @@ Core frontend components include pages for Home, Product Detail, All Products, A
 - India Post API (for shipping and tracking services)
 - Razorpay (for payment processing)
 
-## Recent Updates (August 19, 2025)
+## Recent Updates (August 20, 2025)
 
-### Admin Login Authentication Fix (Latest - COMPLETED)
+### Automated Weight-Based Shipping System (Latest - COMPLETED)
+- **Database Schema Enhancement**: Added `weight` field to `productVariants` table and `totalWeight`/`shippingCost` fields to `orders` table
+- **Weight Calculation Engine**: Created comprehensive weight calculation utilities with shipping cost tiers:
+  - Below 0.5kg: ₹45 shipping
+  - 0.5kg to 1kg: ₹82 shipping  
+  - Above 1kg: ₹82 + ₹50 per additional 0.5kg
+- **Order Integration**: Automatic weight calculation and shipping cost updates during order creation
+- **Cart Shipping Preview**: New `/api/cart/shipping` endpoint provides real-time shipping cost calculation for cart items
+- **Database Migration**: Successfully pushed schema changes with proper weight field defaults
+- **Production Ready**: Full weight-based shipping system operational with comprehensive error handling
+
+### Previous Updates (August 19, 2025)
+
+### Admin Login Authentication Fix (COMPLETED)
 - **Password Hash Correction**: Fixed admin login authentication by updating password hash in database
 - **Working Admin Credentials**: admin@freshlyrooted.com / admin123 (password hash properly updated)
 - **Database Verification**: Confirmed admin user exists with correct role and email verification status
