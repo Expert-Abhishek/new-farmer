@@ -167,7 +167,7 @@ export default function Cart() {
                   <div className="flex justify-between mb-2">
                     <span className="text-foreground">Total Weight</span>
                     <span className="text-foreground font-medium">
-                      {totalWeight.toFixed(2)} kg
+                      {(typeof totalWeight === 'number' ? totalWeight : 0).toFixed(2)} kg
                     </span>
                   </div>
                   <div className="flex justify-between mb-6">

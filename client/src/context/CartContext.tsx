@@ -129,8 +129,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
       const data = await response.json();
       
       if (data.success !== false) {
-        setShipping(data.shippingCost || 0);
-        setTotalWeight(data.totalWeight || 0);
+        setShipping(Number(data.shippingCost) || 0);
+        setTotalWeight(Number(data.totalWeight) || 0);
         console.log(`Cart shipping: ₹${data.shippingCost}, Weight: ${data.totalWeight}kg`);
       }
     } catch (error) {
