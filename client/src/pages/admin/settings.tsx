@@ -122,7 +122,17 @@ export default function AdminSettings() {
 
   React.useEffect(() => {
     if (settingsMap && Object.keys(settingsMap).length > 0) {
-      form.reset(settingsMap);
+      // Create a clean settings object for form
+      const cleanSettings = { ...settingsMap };
+      
+      // For uploaded images (not external URLs), clear the site_logo field in form
+      if (settingsMap.site_logo && 
+          (settingsMap.site_logo.startsWith('/uploads/') || 
+           settingsMap.site_logo.includes('@fs'))) {
+        cleanSettings.site_logo = '';
+      }
+      
+      form.reset(cleanSettings);
       // Set logo preview if there's an existing logo
       if (settingsMap.site_logo) {
         setLogoPreview(settingsMap.site_logo);
@@ -374,7 +384,17 @@ export default function AdminSettings() {
                     </p>
                     {(form.watch('site_logo') || settingsMap.site_logo) && (
                       <p className="text-xs text-muted-foreground mt-1 truncate">
-                        {form.watch('site_logo') || settingsMap.site_logo}
+                        {(() => {
+                          const currentUrl = form.watch('site_logo') || settingsMap.site_logo;
+                          // Don't show local file system paths or uploaded image paths
+                          if (currentUrl && 
+                              !currentUrl.includes('@fs') && 
+                              !currentUrl.startsWith('/uploads/') &&
+                              !currentUrl.startsWith('/@fs')) {
+                            return currentUrl;
+                          }
+                          return 'Uploaded image';
+                        })()}
                       </p>
                     )}
                   </div>
