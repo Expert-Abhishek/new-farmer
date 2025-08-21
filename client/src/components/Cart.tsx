@@ -186,9 +186,7 @@ export default function Cart() {
                     <Button
                       className="w-full bg-primary hover:bg-primary-dark text-white py-3 rounded-md transition duration-300 font-semibold"
                       onClick={closeCart}
-                    >
-                      Proceed to Checkout
-                    </Button>
+                    >Proceed to Address</Button>
                   </Link>
                   <Button
                     variant="ghost"
