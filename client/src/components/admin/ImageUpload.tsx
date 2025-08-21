@@ -30,12 +30,17 @@ export default function ImageUpload({
     if (!files || files.length === 0) return;
 
     const fileArray = Array.from(files);
+    
+    // Only process the first file
+    if (fileArray.length > 1) {
+      fileArray.splice(1); // Keep only first file
+    }
 
-    // Check file count limit
-    if (existingImages.length + fileArray.length > maxImages) {
+    // Check file count limit for multiple image components
+    if (multiple && existingImages.length >= maxImages) {
       toast({
-        title: "Too many files",
-        description: `Maximum ${maxImages} images allowed`,
+        title: "Maximum images reached",
+        description: `You can upload up to ${maxImages} images. Remove existing images first.`,
         variant: "destructive",
       });
       return;
@@ -73,68 +78,33 @@ export default function ImageUpload({
     setUploadProgress(0);
 
     try {
-      if (multiple) {
-        // Always use multiple upload endpoint when multiple is enabled
-        const formData = new FormData();
-        fileArray.forEach((file) => {
-          formData.append("images", file);
-        });
+      // Always upload single image at a time
+      const formData = new FormData();
+      formData.append("image", fileArray[0]);
 
-        const response = await fetch("/api/images/upload/product-images", {
-          method: "POST",
-          body: formData,
-        });
+      const response = await fetch("/api/images/upload/product-image", {
+        method: "POST",
+        body: formData,
+      });
 
-        if (!response.ok) {
-          if (response.status === 413) {
-            throw new Error("File size too large. Maximum file size is 5MB per image.");
-          } else {
-            throw new Error(`Upload failed with status ${response.status}`);
-          }
-        }
-
-        const result = await response.json();
-
-        if (result.success) {
-          result.images.forEach((img: any) => {
-            onImageUpload(img.imagePath, img.thumbnailPath);
-          });
-          toast({
-            title: "Success",
-            description: result.message,
-          });
+      if (!response.ok) {
+        if (response.status === 413) {
+          throw new Error("File size too large. Maximum file size is 5MB per image.");
         } else {
-          throw new Error(result.message);
+          throw new Error(`Upload failed with status ${response.status}`);
         }
+      }
+
+      const result = await response.json();
+
+      if (result.success) {
+        onImageUpload(result.imagePath, result.thumbnailPath);
+        toast({
+          title: "Success",
+          description: result.message,
+        });
       } else {
-        // Upload single image
-        const formData = new FormData();
-        formData.append("image", fileArray[0]);
-
-        const response = await fetch("/api/images/upload/product-image", {
-          method: "POST",
-          body: formData,
-        });
-
-        if (!response.ok) {
-          if (response.status === 413) {
-            throw new Error("File size too large. Maximum file size is 5MB per image.");
-          } else {
-            throw new Error(`Upload failed with status ${response.status}`);
-          }
-        }
-
-        const result = await response.json();
-
-        if (result.success) {
-          onImageUpload(result.imagePath, result.thumbnailPath);
-          toast({
-            title: "Success",
-            description: result.message,
-          });
-        } else {
-          throw new Error(result.message);
-        }
+        throw new Error(result.message);
       }
     } catch (error) {
       console.error("Upload error:", error);
@@ -229,11 +199,11 @@ export default function ImageUpload({
           <Upload className="h-12 w-12 text-gray-400" />
           <div>
             <p className="text-lg font-medium">
-              Drop images here or click to upload
+              Drop image here or click to upload
             </p>
             <p className="text-sm text-gray-500">
               {multiple
-                ? `Upload up to ${maxImages} images`
+                ? `Upload one image at a time (up to ${maxImages} total)`
                 : "Upload a single image"}
             </p>
             <p className="text-xs text-gray-400 mt-1">
@@ -247,7 +217,7 @@ export default function ImageUpload({
             disabled={uploading}
           >
             <ImageIcon className="h-4 w-4 mr-2" />
-            Choose Images
+            Choose Image
           </Button>
         </div>
       </div>
@@ -257,7 +227,7 @@ export default function ImageUpload({
         ref={fileInputRef}
         type="file"
         accept="image/jpeg,image/jpg,image/png,image/webp"
-        multiple={multiple}
+        multiple={false}
         onChange={(e) => handleFileSelect(e.target.files)}
         className="hidden"
       />
