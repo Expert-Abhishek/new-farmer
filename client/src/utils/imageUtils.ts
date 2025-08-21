@@ -7,15 +7,15 @@ export const getImageUrl = (imagePath: string | null | undefined): string => {
     return imagePath;
   }
   
-  // For local/uploaded images that start with /uploads, use VITE_BASE_URL
+  // For local/uploaded images that start with /uploads, construct the proper URL
   if (imagePath.startsWith("/uploads")) {
-    const baseUrl = import.meta.env.VITE_BASE_URL || "";
+    const baseUrl = import.meta.env.VITE_BASE_URL || window.location.origin || "http://localhost:5000";
     return `${baseUrl}${imagePath}`;
   }
   
   // For images served through the API (dynamic admin uploads)
   if (imagePath.includes("/uploads/") || imagePath.startsWith("uploads/")) {
-    const baseUrl = import.meta.env.VITE_BASE_URL || "";
+    const baseUrl = import.meta.env.VITE_BASE_URL || window.location.origin || "http://localhost:5000";
     const cleanPath = imagePath.replace(/^\/+/, ""); // Remove leading slashes
     return `${baseUrl}/${cleanPath}`;
   }

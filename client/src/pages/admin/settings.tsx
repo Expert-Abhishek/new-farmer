@@ -335,7 +335,11 @@ export default function AdminSettings() {
                       src={logoPreview || getImageUrl(settingsMap.site_logo) || placeholderImage}
                       alt="Logo preview"
                       className="w-full h-full object-contain border rounded"
+                      onLoad={() => {
+                        // Logo loaded successfully
+                      }}
                       onError={(e) => {
+                        console.warn("Logo failed to load, using placeholder:", getImageUrl(settingsMap.site_logo));
                         e.currentTarget.onerror = null;
                         e.currentTarget.src = placeholderImage;
                       }}
