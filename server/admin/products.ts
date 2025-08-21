@@ -443,6 +443,7 @@ export const updateProduct = async (req: Request, res: Response) => {
             discountPrice: variant.discountPrice ?? null,
             quantity: variant.quantity,
             unit: variant.unit,
+            weight: variant.weight ?? 0, // Include weight field
             stockQuantity: variant.stockQuantity,
             sku: variant.sku,
             updatedAt: new Date(),

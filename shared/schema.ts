@@ -59,6 +59,7 @@ export const subscriptionStatusEnum = pgEnum("subscription_status", [
 ]);
 // ✅ Product Variants Input Schema (productId will be added later in code)
 export const insertProductVariantSchema = z.object({
+  id: z.number().optional(), // Include id for updates
   price: z.number().positive("Price must be greater than 0"),
   discountPrice: z.number().int().min(0, "Discount price cannot be negative").nullable().optional(),
   quantity: z.number().positive("Quantity must be greater than 0"),

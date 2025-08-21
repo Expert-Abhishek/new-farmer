@@ -70,11 +70,12 @@ import MainLoader from "@/utils/MainLoader";
 
 // Enhanced Product type with all fields
 interface ProductVariant {
-  id?: string; // optional UUID or index
+  id?: number; // Include ID for existing variants
   price: number;
   discountPrice?: number;
   quantity: number;
   unit: string;
+  weight?: number; // Include weight field
   stockQuantity: number;
   sku?: string;
 }
@@ -111,6 +112,7 @@ interface EnhancedProduct {
   enableInstagramShare: boolean;
 }
 const variantSchema = z.object({
+  id: z.number().optional(), // Include id for existing variants
   price: z.number().min(0.01, "Price must be greater than 0"),
   discountPrice: z.preprocess((val) => {
     if (
@@ -526,10 +528,12 @@ export default function EnhancedAdminProducts() {
 
       variants: product.variants?.length
         ? product.variants.map((v) => ({
+            id: v.id, // Include the variant ID for updates
             price: v.price,
             discountPrice: v.discountPrice ?? undefined,
             quantity: v.quantity,
             unit: v.unit,
+            weight: v.weight ?? 0, // Include weight field
             stockQuantity: v.stockQuantity,
             sku: v.sku ?? "",
           }))
