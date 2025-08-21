@@ -159,6 +159,9 @@ export default function AdminSettings() {
         setLogoPreview(e.target?.result as string);
       };
       reader.readAsDataURL(file);
+      
+      // Clear the URL field when uploading a file
+      form.setValue('site_logo', '');
     }
   };
 
@@ -166,6 +169,11 @@ export default function AdminSettings() {
     setLogoFile(null);
     setLogoPreview(null);
     form.setValue('site_logo', '');
+    // Reset the file input
+    const fileInput = document.getElementById('logo-upload') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = '';
+    }
   };
 
   const updateSettingMutation = useMutation({
@@ -212,6 +220,9 @@ export default function AdminSettings() {
 
         const uploadData = await uploadResponse.json();
         logoUrl = uploadData.imagePath;
+        
+        // Update the form field with the uploaded image path
+        form.setValue('site_logo', logoUrl);
         
         toast({
           title: "Logo uploaded successfully",
@@ -327,32 +338,43 @@ export default function AdminSettings() {
             <div className="space-y-4">
               <Label>Site Logo (Optional)</Label>
               
-              {/* Logo Preview - Same pattern as enhanced products table */}
-              {(logoPreview || settingsMap.site_logo) && (
+              {/* Logo Preview - Handle both uploaded files and URL inputs */}
+              {(logoPreview || settingsMap.site_logo || form.watch('site_logo')) && (
                 <div className="flex items-center gap-4 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
                   <div className="relative w-16 h-16 flex-shrink-0">
                     <img
-                      src={logoPreview || getImageUrl(settingsMap.site_logo) || placeholderImage}
+                      src={
+                        logoPreview || 
+                        form.watch('site_logo') || 
+                        getImageUrl(settingsMap.site_logo) || 
+                        placeholderImage
+                      }
                       alt="Logo preview"
                       className="w-full h-full object-contain border rounded"
                       onLoad={() => {
                         // Logo loaded successfully
                       }}
                       onError={(e) => {
-                        console.warn("Logo failed to load, using placeholder:", getImageUrl(settingsMap.site_logo));
+                        console.warn("Logo failed to load, using placeholder:", 
+                          logoPreview || form.watch('site_logo') || getImageUrl(settingsMap.site_logo));
                         e.currentTarget.onerror = null;
                         e.currentTarget.src = placeholderImage;
                       }}
                     />
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm font-medium">Current Site Logo</p>
+                    <p className="text-sm font-medium">Site Logo</p>
                     <p className="text-xs text-muted-foreground">
-                      {logoFile ? 'New upload pending save' : 'Currently active'}
+                      {logoFile 
+                        ? 'New upload pending save' 
+                        : form.watch('site_logo') 
+                          ? 'URL provided' 
+                          : 'Currently active'
+                      }
                     </p>
-                    {settingsMap.site_logo && (
+                    {(form.watch('site_logo') || settingsMap.site_logo) && (
                       <p className="text-xs text-muted-foreground mt-1 truncate">
-                        {settingsMap.site_logo}
+                        {form.watch('site_logo') || settingsMap.site_logo}
                       </p>
                     )}
                   </div>
