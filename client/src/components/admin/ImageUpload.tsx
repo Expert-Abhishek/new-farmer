@@ -73,8 +73,8 @@ export default function ImageUpload({
     setUploadProgress(0);
 
     try {
-      if (multiple && fileArray.length > 1) {
-        // Upload multiple images
+      if (multiple) {
+        // Always use multiple upload endpoint when multiple is enabled
         const formData = new FormData();
         fileArray.forEach((file) => {
           formData.append("images", file);
