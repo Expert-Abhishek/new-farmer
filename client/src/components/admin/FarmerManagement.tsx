@@ -53,7 +53,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import placeholderImage from "../../../../public/uploads/products/no-profile.jpg";
+import placeholderImage from "../../../../public/uploads/products/No-Image-External.png";
 import { getImageUrl } from "@/utils/imageUtils";
 import MainLoader from "@/utils/MainLoader";
 

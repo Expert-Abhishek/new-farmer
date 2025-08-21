@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import placeholderImage from "../../../../public/uploads/products/No-Image.png";
+import placeholderImage from "../../../../public/uploads/products/No-Image-External.png";
 import {
   Plus,
   Search,
@@ -563,7 +563,6 @@ export default function EnhancedAdminProducts() {
   // Handle primary image upload - memoized to prevent infinite loops
   const handlePrimaryImageUpload = useCallback(
     (imagePath: string, thumbnailPath: string) => {
-      console.log("Primary image upload:", imagePath);
       setPrimaryImage(imagePath);
       form.setValue("imageUrl", imagePath);
     },
@@ -573,7 +572,6 @@ export default function EnhancedAdminProducts() {
   // Handle additional images upload - memoized to prevent infinite loops
   const handleAdditionalImageUpload = useCallback(
     (imagePath: string, thumbnailPath: string) => {
-      console.log("Additional image upload:", imagePath);
       setUploadedImages((prev) => [...prev, imagePath]);
       const currentImages = form.getValues("imageUrls");
       const imageArray = currentImages
@@ -591,7 +589,6 @@ export default function EnhancedAdminProducts() {
   // Handle image removal - memoized to prevent infinite loops
   const handleImageRemove = useCallback(
     (imagePath: string) => {
-      console.log("Image removal request:", imagePath);
       // Use functional state update to avoid dependency on primaryImage
       setPrimaryImage((prev) => {
         if (imagePath === prev) {
