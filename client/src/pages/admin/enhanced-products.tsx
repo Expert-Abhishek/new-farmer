@@ -1471,9 +1471,17 @@ export default function EnhancedAdminProducts() {
                                   placeholder="0.5"
                                   min="0"
                                   value={field.value || ""}
-                                  onChange={(e) =>
-                                    field.onChange(e.target.valueAsNumber)
-                                  }
+                                  onChange={(e) => {
+                                    const value = e.target.value;
+                                    if (value === "" || value === ".") {
+                                      field.onChange("");
+                                    } else {
+                                      const numValue = parseFloat(value);
+                                      if (!isNaN(numValue)) {
+                                        field.onChange(numValue);
+                                      }
+                                    }
+                                  }}
                                 />
                               </FormControl>
                               <FormMessage />
