@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import placeholderImage from "../../../../public/uploads/products/No-Image-External.png";
+import noImage from "../../../../public/uploads/products/No-Image.png";
 import {
   Plus,
   Search,
@@ -903,7 +903,7 @@ export default function EnhancedAdminProducts() {
                                 className="w-full h-full object-cover rounded-md"
                                 onError={(e) => {
                                   e.currentTarget.onerror = null;
-                                  e.currentTarget.src = placeholderImage;
+                                  e.currentTarget.src = noImage;
                                 }}
                               />
                               {product.imageUrls &&
@@ -1883,8 +1883,8 @@ export default function EnhancedAdminProducts() {
                   alt={`${productToEdit.name} - Primary`}
                   className="w-full max-w-md h-64 object-cover rounded-lg border"
                   onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.src = "/api/images/placeholder.png";
+                    e.currentTarget.onerror = null;
+                    e.currentTarget.src = noImage;
                   }}
                 />
               </div>
@@ -1902,8 +1902,8 @@ export default function EnhancedAdminProducts() {
                             alt={`${productToEdit.name} - Image ${index + 1}`}
                             className="w-full h-32 object-cover rounded-lg border"
                             onError={(e) => {
-                              const target = e.target as HTMLImageElement;
-                              target.src = "/api/images/placeholder.png";
+                              e.currentTarget.onerror = null;
+                              e.currentTarget.src = noImage;
                             }}
                           />
                           <div className="absolute top-1 right-1 bg-black bg-opacity-50 text-white text-xs rounded px-1">

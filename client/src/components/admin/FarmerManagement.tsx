@@ -53,7 +53,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import placeholderImage from "../../../../public/uploads/products/No-Image-External.png";
+import noImage from "../../../../public/uploads/products/No-Image.png";
 import { getImageUrl } from "@/utils/imageUtils";
 import MainLoader from "@/utils/MainLoader";
 
@@ -919,7 +919,7 @@ export default function FarmerManagement() {
                         src={getImageUrl(farmer.imageUrl)}
                         onError={(e) => {
                           e.currentTarget.onerror = null; // prevent infinite loop
-                          e.currentTarget.src = placeholderImage; // fallback image
+                          e.currentTarget.src = noImage; // fallback image
                         }}
                         alt={farmer.name}
                         className="w-10 h-10 rounded-full object-cover bg-muted flex-shrink-0"

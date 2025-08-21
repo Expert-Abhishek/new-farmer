@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { X, Upload, Image as ImageIcon } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import placeholderImage from "../../../../public/uploads/products/No-Image-External.png";
+import noImage from "../../../../public/uploads/products/No-Image.png";
 
 interface ImageUploadProps {
   onImageUpload: (imagePath: string, thumbnailPath: string) => void;
@@ -258,7 +258,7 @@ export default function ImageUpload({
                   className="w-full h-24 object-cover rounded-lg border"
                   onError={(e) => {
                     e.currentTarget.onerror = null;
-                    e.currentTarget.src = placeholderImage;
+                    e.currentTarget.src = noImage;
                   }}
                 />
                 {onImageRemove && (
