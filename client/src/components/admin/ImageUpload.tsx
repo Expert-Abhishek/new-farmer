@@ -85,6 +85,14 @@ export default function ImageUpload({
           body: formData,
         });
 
+        if (!response.ok) {
+          if (response.status === 413) {
+            throw new Error("File size too large. Maximum file size is 5MB per image.");
+          } else {
+            throw new Error(`Upload failed with status ${response.status}`);
+          }
+        }
+
         const result = await response.json();
 
         if (result.success) {
@@ -108,6 +116,14 @@ export default function ImageUpload({
           body: formData,
         });
 
+        if (!response.ok) {
+          if (response.status === 413) {
+            throw new Error("File size too large. Maximum file size is 5MB per image.");
+          } else {
+            throw new Error(`Upload failed with status ${response.status}`);
+          }
+        }
+
         const result = await response.json();
 
         if (result.success) {
@@ -122,10 +138,22 @@ export default function ImageUpload({
       }
     } catch (error) {
       console.error("Upload error:", error);
+      let errorMessage = "Failed to upload image";
+      
+      // Handle specific error types
+      if (error instanceof Error) {
+        if (error.message.includes("entity too large") || error.message.includes("413")) {
+          errorMessage = "File size too large. Maximum file size is 5MB per image.";
+        } else if (error.message.includes("network") || error.message.includes("Network")) {
+          errorMessage = "Network error. Please check your connection and try again.";
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
       toast({
         title: "Upload failed",
-        description:
-          error instanceof Error ? error.message : "Failed to upload image",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {

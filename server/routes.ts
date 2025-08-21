@@ -147,6 +147,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register image upload routes
   app.use(`${apiPrefix}/images`, imageRouter);
 
+  // Error handling middleware for multer errors
+  app.use((error: any, req: any, res: any, next: any) => {
+    if (error instanceof Error) {
+      // Handle multer file size errors
+      if (error.message === 'File too large') {
+        return res.status(413).json({
+          success: false,
+          message: 'File size too large. Maximum file size is 5MB per image.'
+        });
+      }
+      
+      // Handle multer LIMIT_FILE_SIZE error
+      if (error.code === 'LIMIT_FILE_SIZE') {
+        return res.status(413).json({
+          success: false,
+          message: 'File size too large. Maximum file size is 5MB per image.'
+        });
+      }
+      
+      // Handle multer LIMIT_FILE_COUNT error
+      if (error.code === 'LIMIT_FILE_COUNT') {
+        return res.status(400).json({
+          success: false,
+          message: 'Too many files. Maximum 10 files allowed per upload.'
+        });
+      }
+      
+      // Handle other multer errors
+      if (error.code && error.code.startsWith('LIMIT_')) {
+        return res.status(400).json({
+          success: false,
+          message: error.message || 'Upload limit exceeded.'
+        });
+      }
+    }
+    
+    // Pass other errors to default handler
+    next(error);
+  });
+
   app.get(`${apiPrefix}/products`, async (req, res) => {
     try {
       res.set({

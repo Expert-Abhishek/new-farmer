@@ -203,7 +203,11 @@ export default function AdminSettings() {
         });
 
         if (!uploadResponse.ok) {
-          throw new Error('Failed to upload logo');
+          if (uploadResponse.status === 413) {
+            throw new Error('Logo file size too large. Maximum file size is 5MB.');
+          } else {
+            throw new Error(`Failed to upload logo (Status: ${uploadResponse.status})`);
+          }
         }
 
         const uploadData = await uploadResponse.json();
@@ -328,7 +332,7 @@ export default function AdminSettings() {
                 <div className="flex items-center gap-4 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
                   <div className="relative w-16 h-16 flex-shrink-0">
                     <img
-                      src={logoPreview || getImageUrl(settingsMap.site_logo)}
+                      src={logoPreview || getImageUrl(settingsMap.site_logo) || placeholderImage}
                       alt="Logo preview"
                       className="w-full h-full object-contain border rounded"
                       onError={(e) => {

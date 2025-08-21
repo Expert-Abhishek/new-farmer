@@ -26,9 +26,26 @@ router.post('/upload/product-image', upload.single('image'), async (req, res) =>
     });
   } catch (error) {
     console.error('Image upload error:', error);
-    res.status(500).json({ 
+    let message = 'Failed to upload image';
+    let status = 500;
+    
+    // Handle specific multer errors
+    if (error instanceof Error) {
+      if (error.message.includes('File too large')) {
+        message = 'File size too large. Maximum file size is 5MB.';
+        status = 413;
+      } else if (error.message.includes('Invalid file type')) {
+        message = error.message;
+        status = 400;
+      } else if (error.message.includes('LIMIT_FILE_SIZE')) {
+        message = 'File size too large. Maximum file size is 5MB.';
+        status = 413;
+      }
+    }
+    
+    res.status(status).json({ 
       success: false,
-      message: 'Failed to upload image',
+      message,
       error: error instanceof Error ? error.message : 'Unknown error'
     });
   }
@@ -63,9 +80,26 @@ router.post('/upload/product-images', upload.array('images', 10), async (req, re
     });
   } catch (error) {
     console.error('Multiple images upload error:', error);
-    res.status(500).json({ 
+    let message = 'Failed to upload images';
+    let status = 500;
+    
+    // Handle specific multer errors
+    if (error instanceof Error) {
+      if (error.message.includes('File too large')) {
+        message = 'One or more files are too large. Maximum file size is 5MB per image.';
+        status = 413;
+      } else if (error.message.includes('Invalid file type')) {
+        message = error.message;
+        status = 400;
+      } else if (error.message.includes('LIMIT_FILE_SIZE')) {
+        message = 'One or more files are too large. Maximum file size is 5MB per image.';
+        status = 413;
+      }
+    }
+    
+    res.status(status).json({ 
       success: false,
-      message: 'Failed to upload images',
+      message,
       error: error instanceof Error ? error.message : 'Unknown error'
     });
   }
