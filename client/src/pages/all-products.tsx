@@ -151,9 +151,9 @@ export default function AllProducts() {
     ],
     queryFn: async () => {
       const queryString = buildQueryParams();
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/products?${queryString}`
-      );
+      const fullUrl = `${import.meta.env.VITE_API_URL}/api/products?${queryString}`;
+      console.log("API URL with subcategory:", fullUrl);
+      const response = await fetch(fullUrl);
       console.log(response, "nidhi");
       if (!response.ok) {
         throw new Error(`Failed to fetch products: ${response.status}`);
@@ -178,7 +178,7 @@ export default function AllProducts() {
     if (currentPage !== 1) {
       setCurrentPage(1);
     }
-  }, [searchQuery, selectedCategory, priceRange]);
+  }, [searchQuery, selectedCategory, selectedSubcategory, priceRange]);
 
   // Update search input when URL search param changes
   useEffect(() => {
@@ -317,6 +317,7 @@ export default function AllProducts() {
     // Immediate scroll to top
     // window.scrollTo(0, 0);
 
+    console.log("Subcategory changed to:", subcategoryName);
     setSelectedSubcategory(subcategoryName);
     setCurrentPage(1);
 
