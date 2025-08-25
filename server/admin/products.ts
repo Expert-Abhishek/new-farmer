@@ -140,6 +140,7 @@ export const getAllProducts = async (req: Request, res: Response) => {
       order = "asc",
       search = "",
       category = "",
+      subcategory = "",
     } = req.query as Record<string, string>;
 
     const pageNumber = parseInt(page);
@@ -150,6 +151,7 @@ export const getAllProducts = async (req: Request, res: Response) => {
     const productFilters = [];
     if (search) productFilters.push(like(products.name, `%${search}%`));
     if (category) productFilters.push(eq(products.category, category));
+    if (subcategory) productFilters.push(eq(products.subcategory, subcategory));
 
     // First, find product IDs that have variants
     const variantSubQuery = db
