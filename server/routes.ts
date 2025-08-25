@@ -203,6 +203,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         sortOrder = "asc",
         search = "",
         category = "",
+        subcategory = "",
         minPrice = "",
         maxPrice = "",
       } = req.query as Record<string, string>;
@@ -233,6 +234,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const productFilters = [];
       if (search) productFilters.push(ilike(products.name, `%${search}%`));
       if (category) productFilters.push(eq(products.category, category));
+      if (subcategory) productFilters.push(eq(products.subcategory, subcategory));
 
       // Step 1: Get IDs of products that match filters & variant constraints
       const productIdsWithVariants = await db

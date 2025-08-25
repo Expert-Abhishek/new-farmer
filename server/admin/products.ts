@@ -143,8 +143,6 @@ export const getAllProducts = async (req: Request, res: Response) => {
       subcategory = "",
     } = req.query as Record<string, string>;
 
-    console.log("API Filters - Category:", category, "Subcategory:", subcategory);
-
     const pageNumber = parseInt(page);
     const limitNumber = parseInt(limit);
     const offset = (pageNumber - 1) * limitNumber;
@@ -153,12 +151,7 @@ export const getAllProducts = async (req: Request, res: Response) => {
     const productFilters = [];
     if (search) productFilters.push(like(products.name, `%${search}%`));
     if (category) productFilters.push(eq(products.category, category));
-    if (subcategory) {
-      console.log("Adding subcategory filter:", subcategory);
-      productFilters.push(eq(products.subcategory, subcategory));
-    }
-    
-    console.log("Total filters applied:", productFilters.length);
+    if (subcategory) productFilters.push(eq(products.subcategory, subcategory));
 
     // First, find product IDs that have variants
     const variantSubQuery = db
