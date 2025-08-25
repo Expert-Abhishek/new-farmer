@@ -25,6 +25,7 @@ import TrackOrder from "@/pages/track-order";
 import PrivacyPolicy from "@/pages/privacy-policy";
 import Shipping from "@/pages/shipping";
 import VerifyEmailChange from "@/pages/verify-email-change";
+import CategoryFilter from "@/components/CategoryFilter";
 
 // Admin Pages
 import AdminLogin from "@/pages/admin/login";
@@ -54,6 +55,7 @@ function App() {
                       <Switch>
                         <Route path="/" component={Home} />
                         <Route path="/products" component={AllProducts} />
+                        <Route path="/category-filter" component={CategoryFilter} />
                         <Route path="/products/:id" component={ProductDetail} />
                         <Route path="/farmers" component={AllFarmers} />
                         <Route path="/checkout" component={Checkout} />
