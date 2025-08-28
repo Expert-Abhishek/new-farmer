@@ -31,7 +31,10 @@ const authenticateAdmin = async (
     // Verify token
     const decodedToken = jwt.verify(
       token,
-      process.env.JWT_SECRET || "secret-key"
+      process.env.JWT_SECRET || (() => {
+        console.error("WARNING: JWT_SECRET environment variable is not set. Using fallback value.");
+        return "fallback-secret-key-change-in-production";
+      })()
     ) as { userId: number };
 
     // Check if user exists and is an admin
@@ -77,7 +80,10 @@ adminRouter.post("/login", async (req: Request, res: Response) => {
     // Generate token
     const token = jwt.sign(
       { userId: user.id, role: user.role },
-      process.env.JWT_SECRET || "secret-key",
+      process.env.JWT_SECRET || (() => {
+        console.error("WARNING: JWT_SECRET environment variable is not set. Using fallback value.");
+        return "fallback-secret-key-change-in-production";
+      })(),
       { expiresIn: "24h" }
     );
 

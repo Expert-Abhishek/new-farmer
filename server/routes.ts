@@ -62,7 +62,10 @@ import path from "path";
 import express from "express";
 
 // JWT Secret
-const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
+const JWT_SECRET = process.env.JWT_SECRET || (() => {
+  console.error("WARNING: JWT_SECRET environment variable is not set. Using fallback value.");
+  return "fallback-secret-key-change-in-production";
+})();
 const JWT_EXPIRY = "24h";
 
 // Initialize Razorpay
