@@ -66,10 +66,11 @@ Core frontend components include pages for Home, Product Detail, All Products, A
 ### Subcategory Validation Enhancement (Latest - COMPLETED)
 - **Unique Subcategory Names**: Updated subcategory validation logic to allow subcategories with the same name under different parent categories
 - **Slug Generation Enhancement**: Modified slug generation for subcategories to include parent ID (`sub-{parentId}-{name}`) ensuring unique slugs across all categories
-- **Validation Logic**: Subcategory name uniqueness now checked only within the same parent category during creation and updates
+- **Delete Validation Fix**: Updated delete validation to check by category-subcategory combination instead of just subcategory name to prevent conflicts
+- **Validation Logic**: Subcategory name uniqueness now checked only within the same parent category during creation, updates, and deletion
 - **Database Schema**: Maintained existing schema structure with unique slug constraints while allowing flexible naming
-- **Implementation**: Updated both creation and update endpoints for subcategories with improved slug generation
-- **Example**: Category A → Subcategory: Raw and Category B → Subcategory: Raw are now both allowed
+- **Implementation**: Updated creation, update, and delete endpoints for subcategories with improved validation logic
+- **Example**: Category A → Subcategory: Raw and Category B → Subcategory: Raw are now both allowed and can be managed independently
 - **Production Ready**: Full subcategory validation system operational with proper scope-limited uniqueness checking
 
 ### Previous Updates (August 21, 2025)

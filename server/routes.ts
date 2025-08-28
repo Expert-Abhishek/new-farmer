@@ -3098,8 +3098,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Subcategory not found" });
       }
 
+      // Get the parent category to ensure we only check products in the correct category-subcategory combination
+      const parentCategory = await storage.getCategoryById(subcategory.parentId!);
+      if (!parentCategory) {
+        return res.status(404).json({ message: "Parent category not found" });
+      }
+
+      // Filter products that use both the specific category AND subcategory combination
       const productsUsingSubcategory = allProducts.filter(
-        (product) => product.subcategory === subcategory.name
+        (product) => product.subcategory === subcategory.name && product.category === parentCategory.name
       );
 
       if (productsUsingSubcategory.length > 0) {
