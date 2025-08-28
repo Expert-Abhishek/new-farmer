@@ -2976,9 +2976,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return res.status(404).json({ message: "Parent category not found" });
         }
 
-        // Generate slug if not provided (add 'sub-' prefix for subcategories)
+        // Generate slug if not provided (add 'sub-' prefix with parent ID for subcategories)
         if (!subcategoryData.slug) {
-          subcategoryData.slug = `sub-${generateSlug(subcategoryData.name)}`;
+          subcategoryData.slug = `sub-${parentId}-${generateSlug(subcategoryData.name)}`;
         }
 
         // Check for duplicate subcategory name within the same parent category (exact match only)
@@ -3032,9 +3032,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Subcategory name must be at least 2 characters long" });
       }
 
-      // Generate slug if name is being updated and slug is not provided (add 'sub-' prefix for subcategories)
+      // Generate slug if name is being updated and slug is not provided (add 'sub-' prefix with parent ID for subcategories)
       if (updateData.name && !updateData.slug) {
-        updateData.slug = `sub-${generateSlug(updateData.name)}`;
+        const subcategory = await storage.getCategoryById(subcategoryId);
+        if (subcategory && subcategory.parentId) {
+          updateData.slug = `sub-${subcategory.parentId}-${generateSlug(updateData.name)}`;
+        }
       }
 
       // Check for duplicate subcategory name within the same parent if name is being updated (exact match only)

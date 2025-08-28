@@ -61,9 +61,20 @@ Core frontend components include pages for Home, Product Detail, All Products, A
 - India Post API (for shipping and tracking services)
 - Razorpay (for payment processing)
 
-## Recent Updates (August 21, 2025)
+## Recent Updates (August 28, 2025)
 
-### Local No-Image Placeholder Implementation (Latest - COMPLETED)
+### Subcategory Validation Enhancement (Latest - COMPLETED)
+- **Unique Subcategory Names**: Updated subcategory validation logic to allow subcategories with the same name under different parent categories
+- **Slug Generation Enhancement**: Modified slug generation for subcategories to include parent ID (`sub-{parentId}-{name}`) ensuring unique slugs across all categories
+- **Validation Logic**: Subcategory name uniqueness now checked only within the same parent category during creation and updates
+- **Database Schema**: Maintained existing schema structure with unique slug constraints while allowing flexible naming
+- **Implementation**: Updated both creation and update endpoints for subcategories with improved slug generation
+- **Example**: Category A → Subcategory: Raw and Category B → Subcategory: Raw are now both allowed
+- **Production Ready**: Full subcategory validation system operational with proper scope-limited uniqueness checking
+
+### Previous Updates (August 21, 2025)
+
+### Local No-Image Placeholder Implementation (COMPLETED)
 - **Local Image Import**: Updated all admin components to use local `No-Image.png` file instead of server-hosted placeholders
 - **Fixed Infinite Loop Issue**: Resolved infinite image request loop in enhanced products by removing `primaryImage` dependency and using functional state updates
 - **Consistent Placeholder**: Enhanced products, ImageUpload, and FarmerManagement components now use `import noImage from "../../../../public/uploads/products/No-Image.png"`
