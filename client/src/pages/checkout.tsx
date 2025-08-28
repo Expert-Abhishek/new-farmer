@@ -225,7 +225,10 @@ export default function Checkout() {
         );
         // Store applied discount for Razorpay flow
         if (appliedDiscount) {
-          sessionStorage.setItem("appliedDiscount", JSON.stringify(appliedDiscount));
+          sessionStorage.setItem(
+            "appliedDiscount",
+            JSON.stringify(appliedDiscount)
+          );
         }
         setLocation(
           `/payment?amount=${calculateTotal().toFixed(
@@ -383,7 +386,7 @@ export default function Checkout() {
                         <FormItem>
                           <FormLabel>First Name</FormLabel>
                           <FormControl>
-                            <Input placeholder="John" {...field} />
+                            <Input placeholder="Rajesh " {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -396,7 +399,7 @@ export default function Checkout() {
                         <FormItem>
                           <FormLabel>Last Name</FormLabel>
                           <FormControl>
-                            <Input placeholder="Doe" {...field} />
+                            <Input placeholder="Sharma" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -411,7 +414,7 @@ export default function Checkout() {
                           <FormControl>
                             <Input
                               type="email"
-                              placeholder="john.doe@example.com"
+                              placeholder="Rajeshsharma@example.com"
                               {...field}
                             />
                           </FormControl>
@@ -426,7 +429,7 @@ export default function Checkout() {
                         <FormItem>
                           <FormLabel>Phone Number</FormLabel>
                           <FormControl>
-                            <Input placeholder="+91 98765 43210" {...field} />
+                            <Input placeholder="+91 12344 43210" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -448,7 +451,10 @@ export default function Checkout() {
                         <FormItem>
                           <FormLabel>Street Address</FormLabel>
                           <FormControl>
-                            <Input placeholder="123, 2nd Cross, Jayanagar" {...field} />
+                            <Input
+                              placeholder="123, 2nd Cross, Jayanagar"
+                              {...field}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>

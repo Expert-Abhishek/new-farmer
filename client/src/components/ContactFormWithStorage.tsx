@@ -16,7 +16,7 @@ const contactFormSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
   subject: z.string().min(5, "Subject must be at least 5 characters"),
   message: z.string().min(10, "Message must be at least 10 characters long"),
-  status: z.string().default("new")
+  status: z.string().default("new"),
 });
 
 // Infer the type from our schema
@@ -31,7 +31,7 @@ export default function ContactFormWithStorage() {
     register,
     handleSubmit,
     reset,
-    formState: { errors, isSubmitting }
+    formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(contactFormSchema),
     defaultValues: {
@@ -39,8 +39,8 @@ export default function ContactFormWithStorage() {
       email: "",
       subject: "",
       message: "",
-      status: "new" // Default status for new messages
-    }
+      status: "new", // Default status for new messages
+    },
   });
 
   // Set up the mutation to send the form data to the API
@@ -48,23 +48,24 @@ export default function ContactFormWithStorage() {
     mutationFn: async (data: ContactFormValues) => {
       return apiRequest("/api/contact", {
         method: "POST",
-        body: JSON.stringify(data)
+        body: JSON.stringify(data),
       });
     },
     onSuccess: () => {
       // Show success message
       toast({
         title: "Message sent!",
-        description: "We've received your message and will get back to you soon.",
-        variant: "default"
+        description:
+          "We've received your message and will get back to you soon.",
+        variant: "default",
       });
-      
+
       // Reset the form
       reset();
-      
+
       // Show success state
       setIsSuccess(true);
-      
+
       // Hide success state after 5 seconds
       setTimeout(() => {
         setIsSuccess(false);
@@ -74,11 +75,12 @@ export default function ContactFormWithStorage() {
       // Show error message
       toast({
         title: "Message failed to send",
-        description: "There was a problem sending your message. Please try again.",
-        variant: "destructive"
+        description:
+          "There was a problem sending your message. Please try again.",
+        variant: "destructive",
       });
       console.error("Contact form error:", error);
-    }
+    },
   });
 
   // Handle form submission
@@ -86,7 +88,7 @@ export default function ContactFormWithStorage() {
     // Add the status if it doesn't exist
     const formData = {
       ...data,
-      status: data.status || "new"
+      status: data.status || "new",
     };
     mutation.mutate(formData as ContactFormValues);
   };
@@ -96,10 +98,13 @@ export default function ContactFormWithStorage() {
       {isSuccess ? (
         <div className="bg-green-50 border border-green-200 text-green-800 rounded-lg p-4 mb-6">
           <p className="font-medium">Thank you for contacting us!</p>
-          <p>Your message has been sent successfully. We'll get back to you as soon as possible.</p>
+          <p>
+            Your message has been sent successfully. We'll get back to you as
+            soon as possible.
+          </p>
         </div>
       ) : null}
-      
+
       <div className="grid gap-6 md:grid-cols-2">
         <div className="space-y-2">
           <label htmlFor="name" className="text-sm font-medium text-gray-700">
@@ -107,7 +112,7 @@ export default function ContactFormWithStorage() {
           </label>
           <Input
             id="name"
-            placeholder="John Doe"
+            placeholder="Rajesh Sharma"
             {...register("name")}
             aria-invalid={!!errors.name}
           />
@@ -115,7 +120,7 @@ export default function ContactFormWithStorage() {
             <p className="text-sm text-red-500">{errors.name.message}</p>
           )}
         </div>
-        
+
         <div className="space-y-2">
           <label htmlFor="email" className="text-sm font-medium text-gray-700">
             Email Address
@@ -132,7 +137,7 @@ export default function ContactFormWithStorage() {
           )}
         </div>
       </div>
-      
+
       <div className="space-y-2">
         <label htmlFor="subject" className="text-sm font-medium text-gray-700">
           Subject
@@ -147,7 +152,7 @@ export default function ContactFormWithStorage() {
           <p className="text-sm text-red-500">{errors.subject.message}</p>
         )}
       </div>
-      
+
       <div className="space-y-2">
         <label htmlFor="message" className="text-sm font-medium text-gray-700">
           Message
@@ -163,16 +168,16 @@ export default function ContactFormWithStorage() {
           <p className="text-sm text-red-500">{errors.message.message}</p>
         )}
       </div>
-      
+
       <div className="flex justify-between">
         <Button
           type="submit"
           disabled={isSubmitting || mutation.isPending}
           className="bg-primary hover:bg-primary/90 text-white"
         >
-          {(isSubmitting || mutation.isPending) ? "Sending..." : "Send Message"}
+          {isSubmitting || mutation.isPending ? "Sending..." : "Send Message"}
         </Button>
-        
+
         <Button
           type="button"
           variant="outline"
