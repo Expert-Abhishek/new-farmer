@@ -30,7 +30,7 @@ export default function ImageUpload({
     if (!files || files.length === 0) return;
 
     const fileArray = Array.from(files);
-    
+
     // Only process the first file
     if (fileArray.length > 1) {
       fileArray.splice(1); // Keep only first file
@@ -62,9 +62,8 @@ export default function ImageUpload({
     }
 
     // Check file sizes (5MB limit)
-    const oversizedFiles = fileArray.filter(
-      (file) => file.size > 5 * 1024 * 1024
-    );
+    const MAX_SIZE = 6 * 1024 * 1024; // ~6 MB
+    const oversizedFiles = fileArray.filter((file) => file.size > MAX_SIZE);
     if (oversizedFiles.length > 0) {
       toast({
         title: "File too large",
@@ -89,7 +88,9 @@ export default function ImageUpload({
 
       if (!response.ok) {
         if (response.status === 413) {
-          throw new Error("File size too large. Maximum file size is 5MB per image.");
+          throw new Error(
+            "File size too large. Maximum file size is 5MB per image."
+          );
         } else {
           throw new Error(`Upload failed with status ${response.status}`);
         }
@@ -109,18 +110,26 @@ export default function ImageUpload({
     } catch (error) {
       console.error("Upload error:", error);
       let errorMessage = "Failed to upload image";
-      
+
       // Handle specific error types
       if (error instanceof Error) {
-        if (error.message.includes("entity too large") || error.message.includes("413")) {
-          errorMessage = "File size too large. Maximum file size is 5MB per image.";
-        } else if (error.message.includes("network") || error.message.includes("Network")) {
-          errorMessage = "Network error. Please check your connection and try again.";
+        if (
+          error.message.includes("entity too large") ||
+          error.message.includes("413")
+        ) {
+          errorMessage =
+            "File size too large. Maximum file size is 5MB per image.";
+        } else if (
+          error.message.includes("network") ||
+          error.message.includes("Network")
+        ) {
+          errorMessage =
+            "Network error. Please check your connection and try again.";
         } else {
           errorMessage = error.message;
         }
       }
-      
+
       toast({
         title: "Upload failed",
         description: errorMessage,

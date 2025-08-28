@@ -124,14 +124,16 @@ export default function AdminSettings() {
     if (settingsMap && Object.keys(settingsMap).length > 0) {
       // Create a clean settings object for form
       const cleanSettings = { ...settingsMap };
-      
+
       // For uploaded images (not external URLs), clear the site_logo field in form
-      if (settingsMap.site_logo && 
-          (settingsMap.site_logo.startsWith('/uploads/') || 
-           settingsMap.site_logo.includes('@fs'))) {
-        cleanSettings.site_logo = '';
+      if (
+        settingsMap.site_logo &&
+        (settingsMap.site_logo.startsWith("/uploads/") ||
+          settingsMap.site_logo.includes("@fs"))
+      ) {
+        cleanSettings.site_logo = "";
       }
-      
+
       form.reset(cleanSettings);
       // Set logo preview if there's an existing logo
       if (settingsMap.site_logo) {
@@ -143,7 +145,7 @@ export default function AdminSettings() {
   const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      if (!file.type.startsWith('image/')) {
+      if (!file.type.startsWith("image/")) {
         toast({
           title: "Invalid file type",
           description: "Please select an image file.",
@@ -152,7 +154,8 @@ export default function AdminSettings() {
         return;
       }
 
-      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+      if (file.size > 6 * 1024 * 1024) {
+        // 5MB limit
         toast({
           title: "File too large",
           description: "Please select an image smaller than 5MB.",
@@ -162,27 +165,29 @@ export default function AdminSettings() {
       }
 
       setLogoFile(file);
-      
+
       // Create preview URL
       const reader = new FileReader();
       reader.onload = (e) => {
         setLogoPreview(e.target?.result as string);
       };
       reader.readAsDataURL(file);
-      
+
       // Clear the URL field when uploading a file
-      form.setValue('site_logo', '');
+      form.setValue("site_logo", "");
     }
   };
 
   const removeLogo = () => {
     setLogoFile(null);
     setLogoPreview(null);
-    form.setValue('site_logo', '');
+    form.setValue("site_logo", "");
     // Reset the file input
-    const fileInput = document.getElementById('logo-upload') as HTMLInputElement;
+    const fileInput = document.getElementById(
+      "logo-upload"
+    ) as HTMLInputElement;
     if (fileInput) {
-      fileInput.value = '';
+      fileInput.value = "";
     }
   };
 
@@ -213,44 +218,50 @@ export default function AdminSettings() {
       if (logoFile) {
         setIsUploadingLogo(true);
         const formData = new FormData();
-        formData.append('image', logoFile);
+        formData.append("image", logoFile);
 
-        const uploadResponse = await fetch('/api/images/upload/product-image', {
-          method: 'POST',
+        const uploadResponse = await fetch("/api/images/upload/product-image", {
+          method: "POST",
           body: formData,
         });
 
         if (!uploadResponse.ok) {
           if (uploadResponse.status === 413) {
-            throw new Error('Logo file size too large. Maximum file size is 5MB.');
+            throw new Error(
+              "Logo file size too large. Maximum file size is 5MB."
+            );
           } else {
-            throw new Error(`Failed to upload logo (Status: ${uploadResponse.status})`);
+            throw new Error(
+              `Failed to upload logo (Status: ${uploadResponse.status})`
+            );
           }
         }
 
         const uploadData = await uploadResponse.json();
         logoUrl = uploadData.imagePath;
-        
+
         // Update the form field with the uploaded image path
-        form.setValue('site_logo', logoUrl);
-        
+        form.setValue("site_logo", logoUrl);
+
         toast({
           title: "Logo uploaded successfully",
           description: "Your site logo has been uploaded and will be updated.",
         });
-        
+
         setIsUploadingLogo(false);
       }
 
-      const updates = Object.entries({ ...data, site_logo: logoUrl }).map(([key, value]) => ({
-        key,
-        value: value || "",
-        type: "text",
-        description: getSettingDescription(key),
-      }));
+      const updates = Object.entries({ ...data, site_logo: logoUrl }).map(
+        ([key, value]) => ({
+          key,
+          value: value || "",
+          type: "text",
+          description: getSettingDescription(key),
+        })
+      );
 
       await updateSettingMutation.mutateAsync(updates);
-      
+
       // Clear the logo file after successful save
       setLogoFile(null);
 
@@ -347,16 +358,18 @@ export default function AdminSettings() {
             </div>
             <div className="space-y-4">
               <Label>Site Logo (Optional)</Label>
-              
+
               {/* Logo Preview - Handle both uploaded files and URL inputs */}
-              {(logoPreview || settingsMap.site_logo || form.watch('site_logo')) && (
+              {(logoPreview ||
+                settingsMap.site_logo ||
+                form.watch("site_logo")) && (
                 <div className="flex items-center gap-4 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
                   <div className="relative w-16 h-16 flex-shrink-0">
                     <img
                       src={
-                        logoPreview || 
-                        form.watch('site_logo') || 
-                        getImageUrl(settingsMap.site_logo) || 
+                        logoPreview ||
+                        form.watch("site_logo") ||
+                        getImageUrl(settingsMap.site_logo) ||
                         placeholderImage
                       }
                       alt="Logo preview"
@@ -365,8 +378,12 @@ export default function AdminSettings() {
                         // Logo loaded successfully
                       }}
                       onError={(e) => {
-                        console.warn("Logo failed to load, using placeholder:", 
-                          logoPreview || form.watch('site_logo') || getImageUrl(settingsMap.site_logo));
+                        console.warn(
+                          "Logo failed to load, using placeholder:",
+                          logoPreview ||
+                            form.watch("site_logo") ||
+                            getImageUrl(settingsMap.site_logo)
+                        );
                         e.currentTarget.onerror = null;
                         e.currentTarget.src = placeholderImage;
                       }}
@@ -375,25 +392,27 @@ export default function AdminSettings() {
                   <div className="flex-1">
                     <p className="text-sm font-medium">Site Logo</p>
                     <p className="text-xs text-muted-foreground">
-                      {logoFile 
-                        ? 'New upload pending save' 
-                        : form.watch('site_logo') 
-                          ? 'URL provided' 
-                          : 'Currently active'
-                      }
+                      {logoFile
+                        ? "New upload pending save"
+                        : form.watch("site_logo")
+                        ? "URL provided"
+                        : "Currently active"}
                     </p>
-                    {(form.watch('site_logo') || settingsMap.site_logo) && (
+                    {(form.watch("site_logo") || settingsMap.site_logo) && (
                       <p className="text-xs text-muted-foreground mt-1 truncate">
                         {(() => {
-                          const currentUrl = form.watch('site_logo') || settingsMap.site_logo;
+                          const currentUrl =
+                            form.watch("site_logo") || settingsMap.site_logo;
                           // Don't show local file system paths or uploaded image paths
-                          if (currentUrl && 
-                              !currentUrl.includes('@fs') && 
-                              !currentUrl.startsWith('/uploads/') &&
-                              !currentUrl.startsWith('/@fs')) {
+                          if (
+                            currentUrl &&
+                            !currentUrl.includes("@fs") &&
+                            !currentUrl.startsWith("/uploads/") &&
+                            !currentUrl.startsWith("/@fs")
+                          ) {
                             return currentUrl;
                           }
-                          return 'Uploaded image';
+                          return "Uploaded image";
                         })()}
                       </p>
                     )}
@@ -427,7 +446,9 @@ export default function AdminSettings() {
                     <Button
                       type="button"
                       variant="outline"
-                      onClick={() => document.getElementById('logo-upload')?.click()}
+                      onClick={() =>
+                        document.getElementById("logo-upload")?.click()
+                      }
                       className="w-full justify-center"
                     >
                       <Upload className="h-4 w-4 mr-2" />
@@ -668,10 +689,10 @@ export default function AdminSettings() {
             disabled={updateSettingMutation.isPending || isUploadingLogo}
             className="min-w-[120px]"
           >
-            {(updateSettingMutation.isPending || isUploadingLogo) ? (
+            {updateSettingMutation.isPending || isUploadingLogo ? (
               <div className="flex items-center">
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                {isUploadingLogo ? 'Uploading Logo...' : 'Saving...'}
+                {isUploadingLogo ? "Uploading Logo..." : "Saving..."}
               </div>
             ) : (
               <>

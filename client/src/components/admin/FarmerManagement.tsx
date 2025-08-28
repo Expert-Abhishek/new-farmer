@@ -112,7 +112,7 @@ export default function FarmerManagement() {
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024) {
+      if (file.size > 6 * 1024 * 1024) {
         // 5MB limit
         toast({
           title: "Error",
