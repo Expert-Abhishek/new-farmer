@@ -63,7 +63,16 @@ Core frontend components include pages for Home, Product Detail, All Products, A
 
 ## Recent Updates (August 28, 2025)
 
-### Subcategory Validation Enhancement (Latest - COMPLETED)
+### Address Localization for Karnataka, India (Latest - COMPLETED)
+- **Checkout Form**: Updated address placeholders to use authentic Karnataka addresses (Jayanagar, Bangalore, Karnataka, 560011)
+- **Admin Settings**: Updated store address placeholders to use Indian format (Brigade Road, MG Road, Bangalore)
+- **Phone Numbers**: Changed to Indian format (+91 98765 43210) across checkout and admin forms
+- **Farmer Management**: Updated Aadhar number placeholder to proper 12-digit format (123456789012)
+- **Order Tracking**: Enhanced tracking number format to include Indian postal code suffix (IP123456789IN)
+- **Consistent Localization**: All address fields now reflect authentic Indian locations and formats
+- **Production Ready**: Complete address localization system operational across all user-facing forms
+
+### Subcategory Validation Enhancement (COMPLETED)
 - **Unique Subcategory Names**: Updated subcategory validation logic to allow subcategories with the same name under different parent categories
 - **Slug Generation Enhancement**: Modified slug generation for subcategories to include parent ID (`sub-{parentId}-{name}`) ensuring unique slugs across all categories
 - **Delete Validation Fix**: Updated delete validation to check by category-subcategory combination instead of just subcategory name to prevent conflicts

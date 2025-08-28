@@ -117,7 +117,7 @@ export function OrderTracking({ initialTrackingNumber, className }: OrderTrackin
           <Input
             value={trackingNumber}
             onChange={(e) => setTrackingNumber(e.target.value)}
-            placeholder="Enter tracking number (e.g., IP123456789)"
+            placeholder="Enter tracking number (e.g., IP123456789IN)"
             className="flex-1"
           />
           <Button 

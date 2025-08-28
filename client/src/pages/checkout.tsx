@@ -426,7 +426,7 @@ export default function Checkout() {
                         <FormItem>
                           <FormLabel>Phone Number</FormLabel>
                           <FormControl>
-                            <Input placeholder="(123) 456-7890" {...field} />
+                            <Input placeholder="+91 98765 43210" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -448,7 +448,7 @@ export default function Checkout() {
                         <FormItem>
                           <FormLabel>Street Address</FormLabel>
                           <FormControl>
-                            <Input placeholder="123 Main St" {...field} />
+                            <Input placeholder="123, 2nd Cross, Jayanagar" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -462,7 +462,7 @@ export default function Checkout() {
                           <FormItem>
                             <FormLabel>City</FormLabel>
                             <FormControl>
-                              <Input placeholder="San Francisco" {...field} />
+                              <Input placeholder="Bangalore" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -475,7 +475,7 @@ export default function Checkout() {
                           <FormItem>
                             <FormLabel>State</FormLabel>
                             <FormControl>
-                              <Input placeholder="California" {...field} />
+                              <Input placeholder="Karnataka" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -488,7 +488,7 @@ export default function Checkout() {
                           <FormItem>
                             <FormLabel>ZIP Code</FormLabel>
                             <FormControl>
-                              <Input placeholder="94103" {...field} />
+                              <Input placeholder="560011" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>

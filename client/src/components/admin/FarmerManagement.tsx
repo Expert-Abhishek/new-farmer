@@ -722,7 +722,7 @@ export default function FarmerManagement() {
                               <FormLabel>Aadhar Number</FormLabel>
                               <FormControl>
                                 <Input
-                                  placeholder="1234 5678 9012"
+                                  placeholder="123456789012"
                                   {...field}
                                 />
                               </FormControl>

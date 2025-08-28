@@ -509,7 +509,7 @@ export default function AdminSettings() {
                 <Input
                   id="store_phone"
                   {...form.register("store_phone")}
-                  placeholder="+1 (555) 123-4567"
+                  placeholder="+91 98765 43210"
                 />
                 {form.formState.errors.store_phone && (
                   <p className="text-sm text-destructive mt-1">
@@ -524,7 +524,7 @@ export default function AdminSettings() {
               <Input
                 id="store_address"
                 {...form.register("store_address")}
-                placeholder="123 Harvest Lane"
+                placeholder="123, Brigade Road, MG Road"
               />
               {form.formState.errors.store_address && (
                 <p className="text-sm text-destructive mt-1">
@@ -552,7 +552,7 @@ export default function AdminSettings() {
                 <Input
                   id="store_state"
                   {...form.register("store_state")}
-                  placeholder="California"
+                  placeholder="Karnataka"
                 />
                 {form.formState.errors.store_state && (
                   <p className="text-sm text-destructive mt-1">
