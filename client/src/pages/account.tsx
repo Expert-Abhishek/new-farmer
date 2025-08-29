@@ -224,12 +224,22 @@ export default function Account() {
     sendPasswordChangeOtp.mutate(formData);
   };
 
-  // Redirect to login if not authenticated (but wait for loading to complete)
+  // Check localStorage directly for immediate authentication check
   useEffect(() => {
+    const storedToken = localStorage.getItem("token");
+    const storedUser = localStorage.getItem("user");
+    
+    // If no stored credentials, redirect immediately without waiting for context loading
+    if (!storedToken || !storedUser) {
+      navigate("/login");
+      return;
+    }
+    
+    // If we have stored credentials but context hasn't loaded yet, wait for it
     if (!isLoading && !isAuthenticated) {
       navigate("/login");
     }
-  }, [isLoading, isAuthenticated, navigate, user, token]);
+  }, [isLoading, isAuthenticated, navigate]);
 
   // Update form when user data changes
   useEffect(() => {
@@ -414,6 +424,16 @@ export default function Account() {
     }
   };
 
+  // Check localStorage immediately for instant authentication check
+  const storedToken = localStorage.getItem("token");
+  const storedUser = localStorage.getItem("user");
+
+  // If no stored credentials, don't render anything (will redirect)
+  if (!storedToken || !storedUser) {
+    return null;
+  }
+
+  // Show loading while context is initializing
   if (isLoading) {
     return (
       <Layout>
@@ -431,8 +451,9 @@ export default function Account() {
     );
   }
 
+  // Final check - if context loaded but not authenticated, don't render
   if (!isAuthenticated) {
-    return null; // We'll redirect in the useEffect
+    return null;
   }
 
   return (

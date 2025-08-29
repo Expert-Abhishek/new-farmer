@@ -51,8 +51,18 @@ export default function Payment() {
     });
   }, []);
 
-  // Redirect to login if not authenticated (but wait for loading to complete)
+  // Check localStorage directly for immediate authentication check
   useEffect(() => {
+    const storedToken = localStorage.getItem("token");
+    const storedUser = localStorage.getItem("user");
+    
+    // If no stored credentials, redirect immediately
+    if (!storedToken || !storedUser) {
+      navigate("/login?redirect=payment");
+      return;
+    }
+    
+    // If we have stored credentials but context hasn't loaded yet, wait for it
     if (!authLoading && !isAuthenticated) {
       navigate("/login?redirect=payment");
     }
@@ -244,6 +254,16 @@ export default function Payment() {
     }
   };
 
+  // Check localStorage immediately for instant authentication check
+  const storedToken = localStorage.getItem("token");
+  const storedUser = localStorage.getItem("user");
+
+  // If no stored credentials, don't render anything (will redirect)
+  if (!storedToken || !storedUser) {
+    return null;
+  }
+
+  // Show loading while context is initializing
   if (authLoading) {
     return (
       <div className="container mx-auto py-10 flex justify-center relative top-16 mb-14">
@@ -261,6 +281,7 @@ export default function Payment() {
     );
   }
 
+  // Final check - if context loaded but not authenticated, don't render
   if (!isAuthenticated || !orderDetails) {
     return null;
   }
