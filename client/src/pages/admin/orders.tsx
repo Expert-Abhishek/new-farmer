@@ -333,8 +333,10 @@ export default function AdminOrders() {
       // Prepare CSV data
       const csvData = data.orders.map((order: any) => ({
         "Order ID": `ORD-${order.id}`,
-        "Customer Name": order.userName || "Guest Customer",
-        "Customer Email": order.userEmail || "No email",
+        "Customer Name": (order.customerInfo?.firstName && order.customerInfo?.lastName) 
+          ? `${order.customerInfo.firstName} ${order.customerInfo.lastName}`
+          : order.userName || "Guest Customer",
+        "Customer Email": order.customerInfo?.email || order.userEmail || "No email",
         "Order Date": new Date(order.createdAt).toLocaleDateString("en-IN"),
         "Total Amount": `₹${order.total}`,
         "Payment Method": order.paymentMethod || "N/A",
@@ -399,8 +401,10 @@ export default function AdminOrders() {
       // Main orders sheet
       const ordersData = data.orders.map((order: any) => ({
         "Order ID": `ORD-${order.id}`,
-        "Customer Name": order.userName || "Guest Customer",
-        "Customer Email": order.userEmail || "No email",
+        "Customer Name": (order.customerInfo?.firstName && order.customerInfo?.lastName) 
+          ? `${order.customerInfo.firstName} ${order.customerInfo.lastName}`
+          : order.userName || "Guest Customer",
+        "Customer Email": order.customerInfo?.email || order.userEmail || "No email",
         "Order Date": new Date(order.createdAt).toLocaleDateString("en-IN"),
         "Total Amount": order.total,
         "Payment Method": order.paymentMethod || "N/A",
@@ -693,9 +697,13 @@ export default function AdminOrders() {
                           </TableCell>
                           <TableCell className="text-nowrap">
                             <div>
-                              <div>{order.userName || "Guest Customer"}</div>
+                              <div>
+                                {order.customerInfo?.firstName && order.customerInfo?.lastName
+                                  ? `${order.customerInfo.firstName} ${order.customerInfo.lastName}`
+                                  : order.userName || "Guest Customer"}
+                              </div>
                               <div className="text-sm text-muted-foreground">
-                                {order.userEmail || "No email"}
+                                {order.customerInfo?.email || order.userEmail || "No email"}
                               </div>
                             </div>
                           </TableCell>
@@ -1070,8 +1078,12 @@ export default function AdminOrders() {
       {printStickerOrder && (
         <PrintableDeliverySticker
           orderId={printStickerOrder.id}
-          customerName={printStickerOrder.userName || "Guest Customer"}
-          customerEmail={printStickerOrder.userEmail || "No email provided"}
+          customerName={
+            (printStickerOrder.customerInfo?.firstName && printStickerOrder.customerInfo?.lastName) 
+              ? `${printStickerOrder.customerInfo.firstName} ${printStickerOrder.customerInfo.lastName}`
+              : printStickerOrder.userName || "Guest Customer"
+          }
+          customerEmail={printStickerOrder.customerInfo?.email || printStickerOrder.userEmail || "No email provided"}
           shippingAddress={`${printStickerOrder.customerInfo.address}, ${printStickerOrder.customerInfo.city}, ${printStickerOrder.customerInfo.state} ${printStickerOrder.customerInfo.zip}`}
           orderTotal={printStickerOrder.total}
           orderDate={printStickerOrder.createdAt}
