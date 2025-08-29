@@ -138,7 +138,7 @@ export default function AdminSettings() {
       form.reset(cleanSettings);
       // Set logo preview if there's an existing logo
       if (settingsMap.site_logo) {
-        setLogoPreview(settingsMap.site_logo);
+        setLogoPreview(getImageUrl(settingsMap.site_logo)); // ✅ Use getImageUrl to properly format the URL
       }
     }
   }, [settingsMap, form]);
@@ -279,7 +279,7 @@ export default function AdminSettings() {
       
       // Update logo preview to show the newly saved logo
       if (logoUrl && logoUrl.trim() !== "") {
-        setLogoPreview(logoUrl);
+        setLogoPreview(getImageUrl(logoUrl)); // ✅ Use getImageUrl to properly format the URL
       } else {
         setLogoPreview(null);
       }
