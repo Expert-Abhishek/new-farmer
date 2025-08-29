@@ -290,7 +290,8 @@ export default function Checkout() {
         }
         
         // For COD, hit your backend API to create order
-        const response = await apiRequest(`/api/payments/verify`, {
+        // Note: apiRequest already handles response parsing, so we get the data directly
+        const data = await apiRequest(`/api/payments/verify`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -306,12 +307,6 @@ export default function Checkout() {
           }),
         });
 
-        if (!response.ok) {
-          const data = await response.json();
-          throw new Error(data.message || "COD order failed");
-        }
-
-        const data = await response.json();
         console.log("COD Order Success", data);
 
         // Clear cart and show success
