@@ -87,6 +87,7 @@ export default function AdminSettings() {
   const [logoFile, setLogoFile] = React.useState<File | null>(null);
   const [logoPreview, setLogoPreview] = React.useState<string | null>(null);
   const [isUploadingLogo, setIsUploadingLogo] = React.useState(false);
+  const [isLogoRemoved, setIsLogoRemoved] = React.useState(false); // Track if user removed logo
 
   const { data: settings = [], isLoading } = useQuery({
     queryKey: ["/api/admin/site-settings"],
@@ -165,6 +166,7 @@ export default function AdminSettings() {
       }
 
       setLogoFile(file);
+      setIsLogoRemoved(false); // Reset removal flag when uploading new file
 
       // Create preview URL
       const reader = new FileReader();
@@ -183,6 +185,7 @@ export default function AdminSettings() {
     setLogoFile(null);
     setLogoPreview(null);
     form.setValue("site_logo", "");
+    setIsLogoRemoved(true); // Mark as removed to hide the preview card
     
     // Reset the file input
     const fileInput = document.getElementById("logo-upload") as HTMLInputElement;
@@ -272,6 +275,7 @@ export default function AdminSettings() {
 
       // Clear the logo file and update preview after successful save
       setLogoFile(null);
+      setIsLogoRemoved(false); // Reset removal flag after save
       
       // Update logo preview to show the newly saved logo
       if (logoUrl && logoUrl.trim() !== "") {
@@ -375,7 +379,7 @@ export default function AdminSettings() {
               <Label>Site Logo (Optional)</Label>
 
               {/* Logo Preview - Full width card with left image and right cross */}
-              {(logoPreview || 
+              {!isLogoRemoved && (logoPreview || 
                 (settingsMap.site_logo && settingsMap.site_logo.trim() !== "") ||
                 (form.watch("site_logo") && form.watch("site_logo").trim() !== "")) ? (
                 <Card className="w-full mb-4">
@@ -467,10 +471,16 @@ export default function AdminSettings() {
                       if (urlValue) {
                         setLogoFile(null);
                         setLogoPreview(null);
+                        setIsLogoRemoved(false); // Reset removal flag when entering URL
                         // Reset the file input
                         const fileInput = document.getElementById("logo-upload") as HTMLInputElement;
                         if (fileInput) {
                           fileInput.value = "";
+                        }
+                      } else {
+                        // If URL is cleared, check if we should mark as removed
+                        if (!logoFile && !logoPreview && !settingsMap.site_logo) {
+                          setIsLogoRemoved(true);
                         }
                       }
                       
