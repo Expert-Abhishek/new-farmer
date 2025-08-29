@@ -128,6 +128,7 @@ export default function AdminOrders() {
   const [isTrackingIdModalOpen, setIsTrackingIdModalOpen] = useState(false);
   const [editingOrder, setEditingOrder] = useState(null);
   const [newTrackingId, setNewTrackingId] = useState("");
+  const [isSavingTrackingId, setIsSavingTrackingId] = useState(false);
   //end tracking id
   console.log(editingOrder, newTrackingId, "nidhi");
   const [searchTerm, setSearchTerm] = useState("");
@@ -554,6 +555,8 @@ export default function AdminOrders() {
     try {
       if (!editingOrder) return; // Guard clause
 
+      setIsSavingTrackingId(true); // ✅ Show loading state
+
       const token = localStorage.getItem("adminToken");
       if (!token) {
         throw new Error("Authentication required");
@@ -578,6 +581,13 @@ export default function AdminOrders() {
       }
 
       const data = await response.json();
+      
+      // Show success message
+      toast({
+        title: "Success",
+        description: "Tracking ID updated successfully and email sent to customer.",
+      });
+
       fetchOrders();
       setIsTrackingIdModalOpen(false);
 
@@ -585,7 +595,15 @@ export default function AdminOrders() {
       return data;
     } catch (error) {
       console.error("Failed to update tracking ID:", error);
-      // You might want to show an error toast here
+      
+      // Show error message
+      toast({
+        title: "Error",
+        description: "Failed to update tracking ID. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSavingTrackingId(false); // ✅ Hide loading state
     }
   };
 
@@ -1070,7 +1088,14 @@ export default function AdminOrders() {
             <Button variant="outline" onClick={handleTrackingIdCancel}>
               Cancel
             </Button>
-            <Button onClick={() => handleTrackingIdSave()}>Save</Button>
+            <Button 
+              onClick={() => handleTrackingIdSave()} 
+              disabled={isSavingTrackingId}
+              data-testid="button-save-tracking"
+            >
+              {isSavingTrackingId && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isSavingTrackingId ? "Saving..." : "Save"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

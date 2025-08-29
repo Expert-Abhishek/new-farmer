@@ -592,11 +592,7 @@ class EmailService {
               </ul>
             </div>
             
-            <div style="text-align: center;">
-              <a href="${
-                siteInfo.baseUrl
-              }/track-order" class="track-button">Track Your Order</a>
-            </div>
+
             
             <p><strong>💡 Pro Tip:</strong> Save the new tracking ID for easy reference. You can track your order anytime on our website or through your logistics partner's tracking page.</p>
             
