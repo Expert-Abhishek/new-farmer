@@ -374,10 +374,10 @@ export default function AdminSettings() {
                         <div className="w-16 h-16 border-2 border-gray-200 rounded-lg overflow-hidden bg-white dark:bg-gray-800 shadow-sm">
                           <img
                             src={
-                              logoPreview ||
-                              form.watch("site_logo") ||
-                              getImageUrl(settingsMap.site_logo) ||
-                              placeholderImage
+                              logoPreview || // New uploaded file preview
+                              (form.watch("site_logo") && !logoFile ? getImageUrl(form.watch("site_logo")) : null) || // URL input (only if no file upload)
+                              (settingsMap.site_logo && !logoFile && !form.watch("site_logo") ? getImageUrl(settingsMap.site_logo) : null) || // Current saved logo (only if no new input)
+                              placeholderImage // Fallback
                             }
                             alt="Logo preview"
                             className="w-full h-full object-contain p-1"

@@ -131,7 +131,7 @@ export default function OrderHistory() {
     queryKey: ["/api/orders/history"],
     enabled: isAuthenticated,
     queryFn: async () => {
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
 
       if (!token) {
         throw new Error("No authentication token found");
@@ -147,12 +147,14 @@ export default function OrderHistory() {
       if (!response.ok) {
         // Handle specific authentication errors
         if (response.status === 401) {
-          localStorage.removeItem("token");
+          sessionStorage.removeItem("token");
+          sessionStorage.removeItem("user");
           throw new Error("Please log in again to view your orders");
         } else if (response.status === 403) {
           const data = await response.json();
           if (data.forceLogout) {
-            localStorage.removeItem("token");
+            sessionStorage.removeItem("token");
+            sessionStorage.removeItem("user");
             throw new Error("Email verification required. Please contact support.");
           }
           throw new Error(data.message || "Access denied");

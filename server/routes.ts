@@ -1874,6 +1874,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get(`${apiPrefix}/orders/history`, authenticate, async (req, res) => {
     try {
       const user = (req as any).user;
+      
+      console.log("Order history request for user:", {
+        id: user.id,
+        email: user.email,
+        name: user.name
+      });
 
       // Step 1: Fetch all orders for the user (including both logged-in orders and session-based orders)
       // First get orders with userId (logged-in orders)
