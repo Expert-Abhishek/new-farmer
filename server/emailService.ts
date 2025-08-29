@@ -54,36 +54,43 @@ class EmailService {
   private async getSiteInfo(): Promise<SiteInfo> {
     try {
       const settings = await this.getSiteSettings();
-      const siteNameSetting = settings.find(s => s.key === 'site_name');
-      const siteTaglineSetting = settings.find(s => s.key === 'site_tagline');
-      const siteLogoSetting = settings.find(s => s.key === 'site_logo');
-      
+      const siteNameSetting = settings.find((s) => s.key === "site_name");
+      const siteTaglineSetting = settings.find((s) => s.key === "site_tagline");
+      const siteLogoSetting = settings.find((s) => s.key === "site_logo");
+
       // Use environment variable for base URL, fallback to Replit domain or localhost
-      const baseUrl = process.env.VITE_API_URL || 
-                     (process.env.REPLIT_DEV_DOMAIN ? `https://${process.env.REPLIT_DEV_DOMAIN}` : 'http://localhost:5000');
-      
+      const baseUrl =
+        process.env.VITE_API_URL ||
+        (process.env.REPLIT_DEV_DOMAIN
+          ? `https://${process.env.REPLIT_DEV_DOMAIN}`
+          : "http://localhost:5000");
+
       return {
-        siteName: siteNameSetting?.value || 'Freshly Rooted',
-        siteTagline: siteTaglineSetting?.value || 'Fresh from Farm to Table',
-        siteLogo: siteLogoSetting?.value || '',
-        baseUrl
+        siteName: siteNameSetting?.value || "Freshly Rooted",
+        siteTagline: siteTaglineSetting?.value || "Fresh from Farm to Table",
+        siteLogo: siteLogoSetting?.value || "",
+        baseUrl,
       };
     } catch (error) {
-      console.error('Error fetching site settings for email:', error);
+      console.error("Error fetching site settings for email:", error);
       // Fallback values
-      const baseUrl = process.env.VITE_API_URL || 
-                     (process.env.REPLIT_DEV_DOMAIN ? `https://${process.env.REPLIT_DEV_DOMAIN}` : 'http://localhost:5000');
+      const baseUrl =
+        process.env.VITE_API_URL ||
+        (process.env.REPLIT_DEV_DOMAIN
+          ? `https://${process.env.REPLIT_DEV_DOMAIN}`
+          : "http://localhost:5000");
       return {
-        siteName: 'Freshly Rooted',
-        siteTagline: 'Fresh from Farm to Table',
-        siteLogo: '',
-        baseUrl
+        siteName: "Freshly Rooted",
+        siteTagline: "Fresh from Farm to Table",
+        siteLogo: "",
+        baseUrl,
       };
     }
   }
 
   async sendOrderNotificationToAdmin(orderData: OrderEmailData): Promise<void> {
-    const { order, orderItems, customerEmail, customerName, totalAmount } = orderData;
+    const { order, orderItems, customerEmail, customerName, totalAmount } =
+      orderData;
     const siteInfo = await this.getSiteInfo();
 
     const orderItemsHtml = orderItems
@@ -182,7 +189,9 @@ class EmailService {
             </table>
 
             <div class="footer">
-              <p>This is an automated notification from your ${siteInfo.siteName} admin panel.</p>
+              <p>This is an automated notification from your ${
+                siteInfo.siteName
+              } admin panel.</p>
               <p>Please process this order promptly to maintain customer satisfaction.</p>
             </div>
           </div>
@@ -194,7 +203,9 @@ class EmailService {
     await this.transporter.sendMail({
       from: `"${this.fromName}" <${this.from}>`,
       to: process.env.ADMIN_EMAIL || "admin@harvestdirect.com",
-      subject: `🌱 New Order #${order.id} - ₹${totalAmount.toFixed(2)} - ${siteInfo.siteName}`,
+      subject: `🌱 New Order #${order.id} - ₹${totalAmount.toFixed(2)} - ${
+        siteInfo.siteName
+      }`,
       html,
     });
   }
@@ -268,7 +279,7 @@ class EmailService {
 
   async sendPasswordResetConfirmation(user: User): Promise<void> {
     const siteInfo = await this.getSiteInfo();
-    
+
     const html = `
       <!DOCTYPE html>
       <html>
@@ -396,7 +407,11 @@ class EmailService {
       console.log("Error sending registration email:", error);
     }
   }
-  async sendEmailChangeVerification(user: User, newEmail: string, verificationToken: string): Promise<void> {
+  async sendEmailChangeVerification(
+    user: User,
+    newEmail: string,
+    verificationToken: string
+  ): Promise<void> {
     const siteInfo = await this.getSiteInfo();
     const verificationUrl = `${siteInfo.baseUrl}/verify-email-change?token=${verificationToken}`;
 
@@ -426,7 +441,9 @@ class EmailService {
           </div>
           <div class="content">
             <h2>Hello ${user.name}!</h2>
-            <p>We received a request to change the email address associated with your ${siteInfo.siteName} account.</p>
+            <p>We received a request to change the email address associated with your ${
+              siteInfo.siteName
+            } account.</p>
             
             <div class="info">
               <strong>📋 Change Details:</strong>
@@ -490,16 +507,18 @@ class EmailService {
     newTrackingId: string
   ): Promise<void> {
     const siteInfo = await this.getSiteInfo();
-    
+
     // Create logo URL if site logo exists
-    let logoUrl = '';
+    let logoUrl = "";
     if (siteInfo.siteLogo) {
       // Check if it's already a full URL
-      if (siteInfo.siteLogo.startsWith('http')) {
+      if (siteInfo.siteLogo.startsWith("http")) {
         logoUrl = siteInfo.siteLogo;
       } else {
         // It's a relative path, make it absolute
-        logoUrl = `${siteInfo.baseUrl}${siteInfo.siteLogo.startsWith('/') ? '' : '/'}${siteInfo.siteLogo}`;
+        logoUrl = `${siteInfo.baseUrl}${
+          siteInfo.siteLogo.startsWith("/") ? "" : "/"
+        }${siteInfo.siteLogo}`;
       }
     }
 
@@ -528,22 +547,25 @@ class EmailService {
       <body>
         <div class="container">
           <div class="header">
-            ${logoUrl ? `<img src="${logoUrl}" alt="${siteInfo.siteName}" class="logo" />` : ''}
+        
             <h1>📦 Tracking ID Updated</h1>
             <p>${siteInfo.siteName} - ${siteInfo.siteTagline}</p>
           </div>
           <div class="content">
             <h2>Hello ${customerName}!</h2>
-            <p>Good news! Your order tracking information has been updated with the latest details from our logistics partner.</p>
+            <p>Your order tracking information has been updated with the latest details from our logistics partner.</p>
             
             <div class="tracking-update">
               <h3>📋 Tracking Update Details</h3>
               <p><strong>Order ID:</strong> #${orderId}</p>
-              <p><strong>Updated on:</strong> ${new Date().toLocaleString("en-IN", {
-                timeZone: "Asia/Kolkata",
-                dateStyle: "full",
-                timeStyle: "short",
-              })}</p>
+              <p><strong>Updated on:</strong> ${new Date().toLocaleString(
+                "en-IN",
+                {
+                  timeZone: "Asia/Kolkata",
+                  dateStyle: "full",
+                  timeStyle: "short",
+                }
+              )}</p>
               
               <div class="tracking-box old-tracking">
                 <strong>Previous Tracking ID:</strong><br>
@@ -571,7 +593,9 @@ class EmailService {
             </div>
             
             <div style="text-align: center;">
-              <a href="${siteInfo.baseUrl}/track-order" class="track-button">Track Your Order</a>
+              <a href="${
+                siteInfo.baseUrl
+              }/track-order" class="track-button">Track Your Order</a>
             </div>
             
             <p><strong>💡 Pro Tip:</strong> Save the new tracking ID for easy reference. You can track your order anytime on our website or through your logistics partner's tracking page.</p>
@@ -596,7 +620,10 @@ class EmailService {
         subject: `📦 Order #${orderId} Tracking Updated - ${siteInfo.siteName}`,
         html,
       });
-      console.log(`Tracking update email sent successfully to ${customerEmail}:`, mail.messageId);
+      console.log(
+        `Tracking update email sent successfully to ${customerEmail}:`,
+        mail.messageId
+      );
     } catch (error) {
       console.error("Error sending tracking update email:", error);
       throw error;
