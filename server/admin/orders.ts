@@ -311,7 +311,7 @@ export const getAllOrders = async (req: Request, res: Response) => {
         order === "asc" ? asc(sortColumn) : desc(sortColumn)
       );
     } else {
-      // Default fallback
+      // Default fallback - show latest orders first
       query = query.orderBy(desc(orders.createdAt));
     }
 

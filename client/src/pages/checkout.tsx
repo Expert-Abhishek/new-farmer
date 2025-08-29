@@ -313,10 +313,20 @@ export default function Checkout() {
         // Clear the cart from frontend context
         await clearCart();
 
-        // Invalidate cart and order history queries
-        queryClient.invalidateQueries({ queryKey: ["/api/cart"] });
-        queryClient.invalidateQueries({
+        // Invalidate cart and order history queries to refresh data
+        await queryClient.invalidateQueries({ queryKey: ["/api/cart"] });
+        await queryClient.invalidateQueries({
           queryKey: ["/api/orders/history"],
+        });
+        
+        // Also refetch the order history to ensure immediate update
+        queryClient.refetchQueries({
+          queryKey: ["/api/orders/history"],
+        });
+        
+        // Also invalidate admin orders cache so new orders appear in admin panel immediately
+        queryClient.invalidateQueries({
+          queryKey: ["/api/admin/orders"],
         });
 
         toast({
