@@ -163,24 +163,53 @@ export default function Checkout() {
   // Create dynamic form schema based on COD access
   const formSchema = createFormSchema(userCodEnabled);
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
+  // Auto-populate form with user information if authenticated
+  const getDefaultValues = () => {
+    const defaults = {
       firstName: "",
       lastName: "",
       email: "",
       phone: "",
-      address: "",
-      city: "",
-      state: "",
-      zip: "",
-      paymentMethod: "razorpay",
+      address: "Enter your street address",
+      city: "Enter your city",
+      state: "Enter your state",
+      zip: "Enter your postal code",
+      paymentMethod: "razorpay" as const,
       cardNumber: "",
       cardExpiry: "",
       cardCvc: "",
       notes: "",
-    },
+    };
+
+    // If user is authenticated, auto-populate their information
+    if (isAuthenticated && user) {
+      // Split user name into first and last name
+      const nameParts = user.name?.split(" ") || [""];
+      const firstName = nameParts[0] || "";
+      const lastName = nameParts.slice(1).join(" ") || "";
+
+      defaults.firstName = firstName;
+      defaults.lastName = lastName;
+      defaults.email = user.email || "";
+      defaults.phone = user.mobile || "Enter your mobile number";
+    }
+
+    return defaults;
+  };
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: getDefaultValues(),
   });
+
+  // Update form values when user authentication status or user data changes
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      const updatedValues = getDefaultValues();
+      form.reset(updatedValues);
+    }
+  }, [isAuthenticated, user, form]);
+
   useEffect(() => {
     window.scrollTo(0, 0);
     if (!isAuthenticated && location !== "/login") {
@@ -386,7 +415,7 @@ export default function Checkout() {
                         <FormItem>
                           <FormLabel>First Name</FormLabel>
                           <FormControl>
-                            <Input placeholder="Enter first name" {...field} />
+                            <Input placeholder="Enter your first name" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -399,7 +428,7 @@ export default function Checkout() {
                         <FormItem>
                           <FormLabel>Last Name</FormLabel>
                           <FormControl>
-                            <Input placeholder="Enter last name" {...field} />
+                            <Input placeholder="Enter your last name" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -414,7 +443,7 @@ export default function Checkout() {
                           <FormControl>
                             <Input
                               type="email"
-                              placeholder="Enter email address"
+                              placeholder="Enter your email address"
                               {...field}
                             />
                           </FormControl>
@@ -430,7 +459,7 @@ export default function Checkout() {
                           <FormLabel>Phone Number</FormLabel>
                           <FormControl>
                             <Input
-                              placeholder="Enter phone number"
+                              placeholder="Enter your phone number"
                               {...field}
                             />
                           </FormControl>
@@ -455,7 +484,7 @@ export default function Checkout() {
                           <FormLabel>Street Address</FormLabel>
                           <FormControl>
                             <Input
-                              placeholder="Enter street address"
+                              placeholder="Enter your street address"
                               {...field}
                             />
                           </FormControl>
@@ -471,7 +500,7 @@ export default function Checkout() {
                           <FormItem>
                             <FormLabel>City</FormLabel>
                             <FormControl>
-                              <Input placeholder="Enter city" {...field} />
+                              <Input placeholder="Enter your city" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -484,7 +513,7 @@ export default function Checkout() {
                           <FormItem>
                             <FormLabel>State</FormLabel>
                             <FormControl>
-                              <Input placeholder="Enter state" {...field} />
+                              <Input placeholder="Enter your state" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -498,7 +527,7 @@ export default function Checkout() {
                             <FormLabel>ZIP Code</FormLabel>
                             <FormControl>
                               <Input
-                                placeholder="Enter postal code"
+                              placeholder="Enter your postal code"
                                 {...field}
                               />
                             </FormControl>
@@ -623,7 +652,7 @@ export default function Checkout() {
                         <FormLabel>Order Notes (Optional)</FormLabel>
                         <FormControl>
                           <Textarea
-                            placeholder="Enter special instructions for delivery (optional)"
+                            placeholder="Enter your special instructions for delivery (optional)"
                             className="min-h-[100px]"
                             {...field}
                           />
