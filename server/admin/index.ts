@@ -370,14 +370,7 @@ adminRouter.get("/discounts", authenticateAdmin, async (req: Request, res: Respo
 
 adminRouter.post("/discounts", authenticateAdmin, async (req: Request, res: Response) => {
   try {
-    // Convert date strings to Date objects
-    const discountData = {
-      ...req.body,
-      startDate: new Date(req.body.startDate),
-      endDate: new Date(req.body.endDate),
-    };
-    
-    const discount = await storage.createDiscount(discountData);
+    const discount = await storage.createDiscount(req.body);
     res.status(201).json(discount);
   } catch (error) {
     console.error("Error creating discount:", error);
@@ -388,14 +381,7 @@ adminRouter.post("/discounts", authenticateAdmin, async (req: Request, res: Resp
 adminRouter.put("/discounts/:id", authenticateAdmin, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    // Convert date strings to Date objects if they exist
-    const discountData = {
-      ...req.body,
-      ...(req.body.startDate && { startDate: new Date(req.body.startDate) }),
-      ...(req.body.endDate && { endDate: new Date(req.body.endDate) }),
-    };
-    
-    const discount = await storage.updateDiscount(parseInt(id), discountData);
+    const discount = await storage.updateDiscount(parseInt(id), req.body);
     res.json(discount);
   } catch (error) {
     console.error("Error updating discount:", error);
