@@ -318,12 +318,12 @@ export default function Checkout() {
         // Invalidate cart and order history queries to refresh data
         await queryClient.invalidateQueries({ queryKey: ["/api/cart"] });
         await queryClient.invalidateQueries({
-          queryKey: ["/api/orders/history"],
+          queryKey: ["/api/orders/history", user?.id],
         });
         
         // Immediately fetch fresh order history data from API
         await queryClient.refetchQueries({
-          queryKey: ["/api/orders/history"],
+          queryKey: ["/api/orders/history", user?.id],
         });
         
         // Also invalidate admin orders cache so new orders appear in admin panel immediately

@@ -6,7 +6,7 @@ import React, {
   ReactNode,
 } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 
 interface User {
   id: number;
@@ -107,6 +107,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(data.user);
       setIsAuthenticated(true);
 
+      // Clear all user-specific cached data to prevent showing previous user's data
+      queryClient.invalidateQueries({ queryKey: ["/api/orders/history"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/cart"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/user/profile"] });
+      
+      // Clear any cached data that might be user-specific - remove all order history queries
+      queryClient.removeQueries({ 
+        predicate: (query) => query.queryKey[0] === "/api/orders/history"
+      });
+      queryClient.removeQueries({ queryKey: ["/api/cart"] });
+
       toast({
         title: "Login successful",
         description: "Welcome back!",
@@ -192,8 +203,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
     setIsAuthenticated(false);
 
-    // Invalidate all queries
-    // queryClient.invalidateQueries();
+    // Clear all user-specific cached data completely
+    queryClient.clear();
 
     toast({
       title: "Logged out",

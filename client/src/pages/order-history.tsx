@@ -116,7 +116,7 @@ interface OrderHistoryResponse {
 }
 
 export default function OrderHistory() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
@@ -128,8 +128,8 @@ export default function OrderHistory() {
     isLoading,
     error,
   } = useQuery<OrderHistoryResponse>({
-    queryKey: ["/api/orders/history"],
-    enabled: isAuthenticated,
+    queryKey: ["/api/orders/history", user?.id], // Include user ID to separate cache per user
+    enabled: isAuthenticated && !!user,
     queryFn: async () => {
       const token = sessionStorage.getItem("token");
 
@@ -221,7 +221,7 @@ export default function OrderHistory() {
       setSelectedOrderId(null);
       setCancellationReason("");
       setIsModalOpen(false); // Close the modal
-      queryClient.invalidateQueries({ queryKey: ["/api/orders/history"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/orders/history", user?.id] });
     },
     onError: (error: any) => {
       toast({
