@@ -131,7 +131,7 @@ export default function OrderHistory() {
     queryKey: ["/api/orders/history"],
     enabled: isAuthenticated,
     queryFn: async () => {
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
 
       if (!token) {
         throw new Error("No authentication token found");

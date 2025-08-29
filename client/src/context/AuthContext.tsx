@@ -36,10 +36,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // Load user data from localStorage on initial load
+  // Load user data from sessionStorage on initial load
   useEffect(() => {
-    const storedToken = localStorage.getItem("token");
-    const storedUser = localStorage.getItem("user");
+    const storedToken = sessionStorage.getItem("token");
+    const storedUser = sessionStorage.getItem("user");
 
 
 
@@ -52,8 +52,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       } catch (error) {
 
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
+        sessionStorage.removeItem("token");
+        sessionStorage.removeItem("user");
         setIsAuthenticated(false);
       }
     } else {
@@ -87,9 +87,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       console.log("Login response:", data);
 
-      // Save auth data to localStorage
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
+      // Save auth data to sessionStorage instead of localStorage
+      // This will automatically clear when browser is closed
+      sessionStorage.setItem("token", data.token);
+      sessionStorage.setItem("user", JSON.stringify(data.user));
 
       // Update state
       setToken(data.token);
@@ -169,9 +170,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = () => {
-    // Clear auth data from localStorage
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    // Clear auth data from sessionStorage
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("user");
 
     // Update state
     setToken(null);
@@ -210,9 +211,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       //   throw new Error(data.message || "Profile update failed");
       // }
 
-      // Update user in localStorage and state
+      // Update user in sessionStorage and state
       const updatedUser = { ...user, name };
-      localStorage.setItem("user", JSON.stringify(updatedUser));
+      sessionStorage.setItem("user", JSON.stringify(updatedUser));
       setUser(updatedUser);
 
       toast({
