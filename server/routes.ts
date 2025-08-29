@@ -1454,6 +1454,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       try {
         const user = (req as any).user;
         const sessionId = (req as any).sessionId || req.body.sessionId;
+        
+        console.log("Payment verification request:", {
+          userId: user?.id,
+          sessionId,
+          paymentMethod: req.body.paymentMethod
+        });
 
         const {
           razorpayPaymentId,
@@ -1493,6 +1499,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         // Get cart
         const cart = await storage.getCart(sessionId);
+        
+        console.log("Cart retrieved:", {
+          sessionId,
+          cartId: cart?.id,
+          itemCount: cart?.items?.length || 0
+        });
 
         if (!cart.items || cart.items.length === 0) {
           return res
@@ -1529,6 +1541,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const trackingId = generateTrackingId();
 
         // Create order
+        console.log("Creating order with:", {
+          userId: user.id,
+          sessionId,
+          paymentMethod,
+          amount: amount / 100,
+          customerInfo
+        });
+        
         const order = await storage.createOrder({
           userId: user.id,
           sessionId,

@@ -191,7 +191,7 @@ export default function Checkout() {
       defaults.firstName = firstName;
       defaults.lastName = lastName;
       defaults.email = user.email || "";
-      defaults.phone = user.mobile || "Enter your mobile number";
+      defaults.phone = (user as any).mobile || "";
     }
 
     return defaults;
@@ -279,20 +279,20 @@ export default function Checkout() {
           },
           body: JSON.stringify({
             paymentMethod: "cod",
-            amount: calculateTotal().toFixed(2) * 100, // send in paise
+            amount: Math.round(calculateTotal() * 100), // send in paise
             currency: "INR",
             customerInfo: orderCustomerInfo,
             appliedDiscount: appliedDiscount, // Include applied discount
           }),
         });
 
-        // if (!response.ok) {
-        //   const data = await response.json();
-        //   throw new Error(data.message || "COD order failed");
-        // }
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.message || "COD order failed");
+        }
 
-        // const data = await response.json();
-        // console.log("COD Order Success", data);
+        const data = await response.json();
+        console.log("COD Order Success", data);
 
         // Clear cart and show success
         // Clear the cart from frontend context
@@ -305,8 +305,8 @@ export default function Checkout() {
         });
 
         toast({
-          title: "Payment Successful",
-          description: "Your payment has been processed successfully.",
+          title: "Order Placed Successfully",
+          description: "Your COD order has been placed successfully.",
         });
 
         // Redirect to success page
@@ -794,7 +794,7 @@ export default function Checkout() {
                     <div className="text-right">
                       <p className="text-foreground font-medium">
                         ₹
-                        {(item.variant.discountPrice * item.quantity).toFixed(
+                        {((item.variant.discountPrice || item.variant.price) * item.quantity).toFixed(
                           2
                         )}
                       </p>
