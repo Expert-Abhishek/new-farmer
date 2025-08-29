@@ -319,8 +319,8 @@ export default function Checkout() {
           queryKey: ["/api/orders/history"],
         });
         
-        // Also refetch the order history to ensure immediate update
-        queryClient.refetchQueries({
+        // Immediately fetch fresh order history data from API
+        await queryClient.refetchQueries({
           queryKey: ["/api/orders/history"],
         });
         
