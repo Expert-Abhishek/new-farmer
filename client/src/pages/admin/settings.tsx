@@ -396,10 +396,10 @@ export default function AdminSettings() {
             <div className="space-y-4">
               <Label>Site Logo (Optional)</Label>
 
-              {/* Logo Preview - Handle both uploaded files and URL inputs */}
+              {/* Logo Preview - Always show if there's any logo data */}
               {(logoPreview ||
                 settingsMap.site_logo ||
-                form.watch("site_logo")) && (
+                form.watch("site_logo")) ? (
                 <div className="flex items-center gap-4 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
                   <div className="relative w-16 h-16 flex-shrink-0">
                     <img
@@ -464,7 +464,7 @@ export default function AdminSettings() {
                     <X className="h-4 w-4" />
                   </Button>
                 </div>
-              )}
+              ) : null}
 
               {/* Upload Options */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

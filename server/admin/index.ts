@@ -358,3 +358,4 @@ adminRouter.patch(
 );
 
 export default adminRouter;
+export { authenticateAdmin };

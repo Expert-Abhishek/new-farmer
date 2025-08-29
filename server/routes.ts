@@ -53,7 +53,7 @@ import {
   lte,
   ilike,
 } from "drizzle-orm";
-import adminRouter from "./admin";
+import adminRouter, { authenticateAdmin } from "./admin";
 import imageRouter from "./imageRoutes";
 import { exportDatabase, exportTable } from "./databaseExport";
 import { updateOrderWeightAndShipping, calculateShippingCost } from "./utils/weightCalculation";
@@ -2559,7 +2559,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/admin/discounts/:id", authenticate, async (req, res) => {
+  app.delete("/api/admin/discounts/:id", authenticateAdmin, async (req, res) => {
     try {
       const { id } = req.params;
       await storage.deleteDiscount(parseInt(id));

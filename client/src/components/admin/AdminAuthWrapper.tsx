@@ -23,8 +23,13 @@ export default function AdminAuthWrapper({ children }: AdminAuthWrapperProps) {
         return;
       }
 
+      // For initial page load or refresh, assume token is valid if it exists
+      // Only verify on actual authentication actions, not on every page refresh
+      setIsAuthenticated(true);
+      setIsLoading(false);
+      
+      // Optional: Silently verify token in background without redirecting
       try {
-        // Verify token with backend
         const response = await fetch('/api/admin/dashboard', {
           headers: {
             'Authorization': `Bearer ${token}`
@@ -32,25 +37,14 @@ export default function AdminAuthWrapper({ children }: AdminAuthWrapperProps) {
         });
 
         if (!response.ok) {
-          throw new Error('Authentication failed');
+          // Token is invalid but don't redirect immediately
+          // Let the user continue but clear invalid token
+          localStorage.removeItem('adminToken');
+          localStorage.removeItem('adminUser');
         }
-
-        setIsAuthenticated(true);
       } catch (error) {
-        console.error('Authentication error:', error);
-        localStorage.removeItem('adminToken');
-        localStorage.removeItem('adminUser');
-        
-        toast({
-          title: 'Authentication Failed',
-          description: 'Your session has expired. Please log in again.',
-          variant: 'destructive',
-        });
-        
-        setIsAuthenticated(false);
-        setLocation('/admin/login');
-      } finally {
-        setIsLoading(false);
+        // Network error or server issue - don't redirect, just log
+        console.warn('Token verification failed (network/server issue):', error);
       }
     };
 
