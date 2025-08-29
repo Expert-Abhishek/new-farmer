@@ -362,37 +362,44 @@ export default function AdminSettings() {
             <div className="space-y-4">
               <Label>Site Logo (Optional)</Label>
 
-              {/* Logo Preview - Clean display with only image and cross button */}
+              {/* Logo Preview - Clean card display */}
               {(logoPreview || 
                 (settingsMap.site_logo && form.watch("site_logo") !== "") ||
                 form.watch("site_logo")) ? (
-                <div className="relative inline-block">
-                  <div className="w-20 h-20 border-2 border-dashed border-gray-300 rounded-lg overflow-hidden bg-gray-50 dark:bg-gray-800">
-                    <img
-                      src={
-                        logoPreview ||
-                        form.watch("site_logo") ||
-                        getImageUrl(settingsMap.site_logo) ||
-                        placeholderImage
-                      }
-                      alt="Logo preview"
-                      className="w-full h-full object-contain"
-                      onError={(e) => {
-                        e.currentTarget.onerror = null;
-                        e.currentTarget.src = placeholderImage;
-                      }}
-                    />
-                  </div>
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    size="sm"
-                    onClick={removeLogo}
-                    className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0 shadow-md"
-                  >
-                    <X className="h-3 w-3" />
-                  </Button>
-                </div>
+                <Card className="w-fit mx-auto mb-4">
+                  <CardContent className="p-4">
+                    <div className="relative flex flex-col items-center">
+                      <div className="relative">
+                        <div className="w-24 h-24 border-2 border-gray-200 rounded-xl overflow-hidden bg-white dark:bg-gray-800 shadow-sm">
+                          <img
+                            src={
+                              logoPreview ||
+                              form.watch("site_logo") ||
+                              getImageUrl(settingsMap.site_logo) ||
+                              placeholderImage
+                            }
+                            alt="Logo preview"
+                            className="w-full h-full object-contain p-2"
+                            onError={(e) => {
+                              e.currentTarget.onerror = null;
+                              e.currentTarget.src = placeholderImage;
+                            }}
+                          />
+                        </div>
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="sm"
+                          onClick={removeLogo}
+                          className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0 shadow-lg hover:scale-110 transition-transform"
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
+                      <p className="text-sm text-muted-foreground mt-2 text-center">Current Logo</p>
+                    </div>
+                  </CardContent>
+                </Card>
               ) : null}
 
               {/* Upload Options */}
