@@ -91,8 +91,15 @@ const authenticate = async (
     const token = authHeader.split(" ")[1];
     const decoded = jwt.verify(token, JWT_SECRET) as { userId: number };
 
+    console.log("JWT Token decoded:", {
+      decodedUserId: decoded.userId,
+      tokenStart: token.substring(0, 15) + "...",
+      url: req.url
+    });
+
     const user = await storage.getUserById(decoded.userId);
     if (!user) {
+      console.log("User not found for ID:", decoded.userId);
       return res.status(401).json({ message: "Invalid user" });
     }
 
@@ -1475,8 +1482,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         console.log("Payment verification request:", {
           userId: user?.id,
+          userEmail: user?.email,
+          userName: user?.name,
           sessionId,
-          paymentMethod: req.body.paymentMethod
+          paymentMethod: req.body.paymentMethod,
+          authHeader: req.headers.authorization ? "Present" : "Missing"
         });
 
         const {
@@ -1561,6 +1571,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Create order
         console.log("Creating order with:", {
           userId: user.id,
+          userEmail: user.email,
+          userName: user.name,
           sessionId,
           paymentMethod,
           amount: amount / 100,
@@ -1583,6 +1595,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
               date: new Date().toISOString(),
             },
           ],
+        });
+        
+        console.log("Order created successfully:", {
+          orderId: order.id,
+          assignedUserId: order.userId,
+          expectedUserId: user.id,
+          trackingId: order.trackingId
         });
 
         // Create order items

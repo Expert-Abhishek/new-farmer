@@ -273,10 +273,12 @@ export default function Checkout() {
         
         console.log("COD Order attempt:", {
           token: token ? "present" : "missing",
+          tokenStart: token ? token.substring(0, 10) + "..." : "missing",
           sessionId,
           cartSessionId,
           isAuthenticated,
-          cartItemsCount: cartItems.length
+          cartItemsCount: cartItems.length,
+          currentUser: user ? { id: user.id, email: user.email, name: user.name } : null
         });
         
         // Check if cart has items before proceeding
