@@ -2484,7 +2484,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Discount API Routes
-  app.get("/api/admin/discounts", async (req, res) => {
+  app.get("/api/admin/discounts", authenticate, async (req, res) => {
     try {
       const discounts = await storage.getAllDiscounts();
       res.json(discounts);
@@ -2494,7 +2494,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/admin/discounts", async (req, res) => {
+  app.post("/api/admin/discounts", authenticate, async (req, res) => {
     try {
       // Convert date strings to Date objects
       const requestData = {
@@ -2523,7 +2523,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/admin/discounts/:id", async (req, res) => {
+  app.put("/api/admin/discounts/:id", authenticate, async (req, res) => {
     try {
       const { id } = req.params;
 
@@ -2559,7 +2559,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/admin/discounts/:id", async (req, res) => {
+  app.delete("/api/admin/discounts/:id", authenticate, async (req, res) => {
     try {
       const { id } = req.params;
       await storage.deleteDiscount(parseInt(id));
