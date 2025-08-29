@@ -56,7 +56,7 @@ const createFormSchema = (codEnabled: boolean) =>
 
 export default function Checkout() {
   const [location, setLocation] = useLocation();
-  const { cartItems, subtotal, shipping, total, clearCart } = useCart();
+  const { cartItems, subtotal, shipping, total, clearCart, sessionId: cartSessionId } = useCart();
   const { user, isAuthenticated, token } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderComplete, setOrderComplete] = useState(false);
@@ -268,14 +268,34 @@ export default function Checkout() {
       }
 
       if (values.paymentMethod === "cod") {
-        const sessionId = localStorage.getItem("sessionId");
+        // Use the cart's session ID to ensure consistency
+        const sessionId = cartSessionId || localStorage.getItem("sessionId");
+        
+        console.log("COD Order attempt:", {
+          token: token ? "present" : "missing",
+          sessionId,
+          cartSessionId,
+          isAuthenticated,
+          cartItemsCount: cartItems.length
+        });
+        
+        // Check if cart has items before proceeding
+        if (cartItems.length === 0) {
+          toast({
+            title: "Cart is Empty",
+            description: "Please add items to your cart before placing an order.",
+            variant: "destructive",
+          });
+          return;
+        }
+        
         // For COD, hit your backend API to create order
         const response = await apiRequest(`/api/payments/verify`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`, // if needed
-            "x-session-id": sessionId?.toString() ?? "",
+            Authorization: token ? `Bearer ${token}` : "",
+            "x-session-id": sessionId || "",
           },
           body: JSON.stringify({
             paymentMethod: "cod",
@@ -316,10 +336,11 @@ export default function Checkout() {
       }
     } catch (error: any) {
       console.error("Order error", error);
+      console.error("Error details:", JSON.stringify(error, null, 2));
       toast({
         title: "Error",
         description:
-          error.error || "There was a problem processing your order.",
+          error.message || error.error || "There was a problem processing your order.",
         variant: "destructive",
       });
     } finally {
