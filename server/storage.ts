@@ -1888,8 +1888,6 @@ export class DatabaseStorage implements IStorage {
         code: discount.code.toUpperCase(),
         startDate: typeof discount.startDate === 'string' ? new Date(discount.startDate) : discount.startDate,
         endDate: typeof discount.endDate === 'string' ? new Date(discount.endDate) : discount.endDate,
-        startDate: typeof discount.startDate === 'string' ? new Date(discount.startDate) : discount.startDate,
-        endDate: typeof discount.endDate === 'string' ? new Date(discount.endDate) : discount.endDate,
       })
       .returning();
     return newDiscount;
@@ -1899,12 +1897,32 @@ export class DatabaseStorage implements IStorage {
     id: number,
     discountData: Partial<InsertDiscount>
   ): Promise<Discount> {
+    const updateData: any = {
+      ...discountData,
+      updatedAt: new Date(),
+    };
+
+    // Convert string dates to Date objects if they exist
+    if (discountData.startDate) {
+      updateData.startDate = typeof discountData.startDate === 'string' 
+        ? new Date(discountData.startDate) 
+        : discountData.startDate;
+    }
+    
+    if (discountData.endDate) {
+      updateData.endDate = typeof discountData.endDate === 'string' 
+        ? new Date(discountData.endDate) 
+        : discountData.endDate;
+    }
+
+    // Convert code to uppercase if it exists
+    if (discountData.code) {
+      updateData.code = discountData.code.toUpperCase();
+    }
+
     const [updatedDiscount] = await db
       .update(discounts)
-      .set({
-        ...discountData,
-        updatedAt: new Date(),
-      })
+      .set(updateData)
       .where(eq(discounts.id, id))
       .returning();
 
