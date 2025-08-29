@@ -87,10 +87,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       console.log("Login response:", data);
 
+      // Clear any existing auth data first to prevent conflicts
+      sessionStorage.removeItem("token");
+      sessionStorage.removeItem("user");
+      
       // Save auth data to sessionStorage instead of localStorage
       // This will automatically clear when browser is closed
       sessionStorage.setItem("token", data.token);
       sessionStorage.setItem("user", JSON.stringify(data.user));
+      
+      console.log("Stored user in sessionStorage:", {
+        userId: data.user.id,
+        userEmail: data.user.email,
+        tokenStart: data.token.substring(0, 10) + "..."
+      });
 
       // Update state
       setToken(data.token);
@@ -170,9 +180,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = () => {
+    console.log("Logging out user:", user ? { id: user.id, email: user.email } : "no user");
+    
     // Clear auth data from sessionStorage
     sessionStorage.removeItem("token");
     sessionStorage.removeItem("user");
+    localStorage.removeItem("sessionId"); // Also clear session ID
 
     // Update state
     setToken(null);
