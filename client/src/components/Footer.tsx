@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { toast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useSiteSettings } from "@/context/SiteContext";
+import { getImageUrl } from "@/utils/imageUtils";
 import {
   Facebook,
   Instagram,
@@ -155,9 +156,13 @@ export default function Footer() {
             <div className="flex items-center space-x-3 mb-6">
               {settings.siteLogo && (
                 <img
-                  src={settings.siteLogo}
+                  src={getImageUrl(settings.siteLogo)}
                   alt={settings.siteName}
                   className="h-8 w-8 object-contain"
+                  onError={(e) => {
+                    e.currentTarget.onerror = null;
+                    e.currentTarget.style.display = 'none';
+                  }}
                 />
               )}
               <h3 className="font-heading text-2xl font-bold text-white">
