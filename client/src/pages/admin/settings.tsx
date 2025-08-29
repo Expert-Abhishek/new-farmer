@@ -396,9 +396,9 @@ export default function AdminSettings() {
             <div className="space-y-4">
               <Label>Site Logo (Optional)</Label>
 
-              {/* Logo Preview - Always show if there's any logo data */}
-              {(logoPreview ||
-                settingsMap.site_logo ||
+              {/* Logo Preview - Show only when there's actual logo data and it hasn't been explicitly removed */}
+              {(logoPreview || 
+                (settingsMap.site_logo && form.watch("site_logo") !== "") ||
                 form.watch("site_logo")) ? (
                 <div className="flex items-center gap-4 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
                   <div className="relative w-16 h-16 flex-shrink-0">
