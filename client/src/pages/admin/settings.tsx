@@ -178,51 +178,20 @@ export default function AdminSettings() {
     }
   };
 
-  const removeLogo = async () => {
-    try {
-      // First, delete the image file from server if it's an uploaded file
-      const currentLogo = settingsMap.site_logo;
-      if (currentLogo && (currentLogo.startsWith("/uploads/") || currentLogo.includes("@fs"))) {
-        try {
-          await apiRequest("/api/images/delete/product-image", {
-            method: "DELETE",
-            body: JSON.stringify({ imagePath: currentLogo }),
-          });
-        } catch (error) {
-          console.warn("Failed to delete image file:", error);
-          // Continue with removing from database even if file deletion fails
-        }
-      }
-
-      // Update the database to remove the logo setting
-      await updateSettingMutation.mutateAsync([
-        {
-          key: "site_logo",
-          value: "",
-          type: "text",
-          description: "Website logo URL",
-        },
-      ]);
-
-      // Clear local state
-      setLogoFile(null);
-      setLogoPreview(null);
-      form.setValue("site_logo", "");
-      
-      // Reset the file input
-      const fileInput = document.getElementById("logo-upload") as HTMLInputElement;
-      if (fileInput) {
-        fileInput.value = "";
-      }
-
-      // No toast notification - user will see the change immediately and can save when ready
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to remove logo. Please try again.",
-        variant: "destructive",
-      });
+  const removeLogo = () => {
+    // Simply clear all logo-related state - works for both uploaded files and pasted URLs
+    setLogoFile(null);
+    setLogoPreview(null);
+    form.setValue("site_logo", "");
+    
+    // Reset the file input
+    const fileInput = document.getElementById("logo-upload") as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = "";
     }
+
+    // Note: The actual removal from database happens when user clicks "Save" 
+    // This gives immediate visual feedback without making API calls
   };
 
   const updateSettingMutation = useMutation({
@@ -393,12 +362,12 @@ export default function AdminSettings() {
             <div className="space-y-4">
               <Label>Site Logo (Optional)</Label>
 
-              {/* Logo Preview - Show only when there's actual logo data and it hasn't been explicitly removed */}
+              {/* Logo Preview - Clean display with only image and cross button */}
               {(logoPreview || 
                 (settingsMap.site_logo && form.watch("site_logo") !== "") ||
                 form.watch("site_logo")) ? (
-                <div className="flex items-center gap-4 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
-                  <div className="relative w-16 h-16 flex-shrink-0">
+                <div className="relative inline-block">
+                  <div className="w-20 h-20 border-2 border-dashed border-gray-300 rounded-lg overflow-hidden bg-gray-50 dark:bg-gray-800">
                     <img
                       src={
                         logoPreview ||
@@ -407,58 +376,21 @@ export default function AdminSettings() {
                         placeholderImage
                       }
                       alt="Logo preview"
-                      className="w-full h-full object-contain border rounded"
-                      onLoad={() => {
-                        // Logo loaded successfully
-                      }}
+                      className="w-full h-full object-contain"
                       onError={(e) => {
-                        console.warn(
-                          "Logo failed to load, using placeholder:",
-                          logoPreview ||
-                            form.watch("site_logo") ||
-                            getImageUrl(settingsMap.site_logo)
-                        );
                         e.currentTarget.onerror = null;
                         e.currentTarget.src = placeholderImage;
                       }}
                     />
                   </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">Site Logo</p>
-                    <p className="text-xs text-muted-foreground">
-                      {logoFile
-                        ? "New upload pending save"
-                        : form.watch("site_logo")
-                        ? "URL provided"
-                        : "Currently active"}
-                    </p>
-                    {(form.watch("site_logo") || settingsMap.site_logo) && (
-                      <p className="text-xs text-muted-foreground mt-1 truncate">
-                        {(() => {
-                          const currentUrl =
-                            form.watch("site_logo") || settingsMap.site_logo;
-                          // Don't show local file system paths or uploaded image paths
-                          if (
-                            currentUrl &&
-                            !currentUrl.includes("@fs") &&
-                            !currentUrl.startsWith("/uploads/") &&
-                            !currentUrl.startsWith("/@fs")
-                          ) {
-                            return currentUrl;
-                          }
-                          return "Uploaded image";
-                        })()}
-                      </p>
-                    )}
-                  </div>
                   <Button
                     type="button"
-                    variant="outline"
+                    variant="destructive"
                     size="sm"
                     onClick={removeLogo}
-                    className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-950/20"
+                    className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0 shadow-md"
                   >
-                    <X className="h-4 w-4" />
+                    <X className="h-3 w-3" />
                   </Button>
                 </div>
               ) : null}
