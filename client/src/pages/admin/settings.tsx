@@ -362,15 +362,16 @@ export default function AdminSettings() {
             <div className="space-y-4">
               <Label>Site Logo (Optional)</Label>
 
-              {/* Logo Preview - Clean card display */}
+              {/* Logo Preview - Full width card with left image and right cross */}
               {(logoPreview || 
                 (settingsMap.site_logo && form.watch("site_logo") !== "") ||
                 form.watch("site_logo")) ? (
-                <Card className="w-fit mx-auto mb-4">
+                <Card className="w-full mb-4">
                   <CardContent className="p-4">
-                    <div className="relative flex flex-col items-center">
-                      <div className="relative">
-                        <div className="w-24 h-24 border-2 border-gray-200 rounded-xl overflow-hidden bg-white dark:bg-gray-800 shadow-sm">
+                    <div className="flex items-center justify-between">
+                      {/* Left side - Logo image with label */}
+                      <div className="flex items-center gap-4">
+                        <div className="w-16 h-16 border-2 border-gray-200 rounded-lg overflow-hidden bg-white dark:bg-gray-800 shadow-sm">
                           <img
                             src={
                               logoPreview ||
@@ -379,24 +380,31 @@ export default function AdminSettings() {
                               placeholderImage
                             }
                             alt="Logo preview"
-                            className="w-full h-full object-contain p-2"
+                            className="w-full h-full object-contain p-1"
                             onError={(e) => {
                               e.currentTarget.onerror = null;
                               e.currentTarget.src = placeholderImage;
                             }}
                           />
                         </div>
-                        <Button
-                          type="button"
-                          variant="destructive"
-                          size="sm"
-                          onClick={removeLogo}
-                          className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0 shadow-lg hover:scale-110 transition-transform"
-                        >
-                          <X className="h-3 w-3" />
-                        </Button>
+                        <div>
+                          <p className="text-sm font-medium">Current Logo</p>
+                          <p className="text-xs text-muted-foreground">
+                            {logoFile ? "New upload ready to save" : "Active site logo"}
+                          </p>
+                        </div>
                       </div>
-                      <p className="text-sm text-muted-foreground mt-2 text-center">Current Logo</p>
+                      
+                      {/* Right side - Remove button */}
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        onClick={removeLogo}
+                        className="h-8 w-8 rounded-full p-0 shadow-md hover:scale-105 transition-transform"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
