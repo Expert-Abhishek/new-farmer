@@ -1886,6 +1886,10 @@ export class DatabaseStorage implements IStorage {
       .values({
         ...discount,
         code: discount.code.toUpperCase(),
+        startDate: typeof discount.startDate === 'string' ? new Date(discount.startDate) : discount.startDate,
+        endDate: typeof discount.endDate === 'string' ? new Date(discount.endDate) : discount.endDate,
+        startDate: typeof discount.startDate === 'string' ? new Date(discount.startDate) : discount.startDate,
+        endDate: typeof discount.endDate === 'string' ? new Date(discount.endDate) : discount.endDate,
       })
       .returning();
     return newDiscount;

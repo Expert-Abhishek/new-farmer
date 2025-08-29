@@ -9,11 +9,13 @@ neonConfig.webSocketConstructor = ws;
 
 // Admin user details
 const adminUser = {
-  email: 'admin@example.com',
+  email: 'admin@freshlyrooted.com',
   password: '$2b$10$hvkzrOAfimB9M5aUNpU/uuji3HZqFp43nmygaYZBpa1o8fir60/OK', // hashed 'admin123'
   name: 'Admin User',
+  mobile: '+919876543210',
   role: 'admin',
-  emailVerified: true
+  emailVerified: true,
+  mobileVerified: true
 };
 
 async function createAdminUser() {
@@ -40,8 +42,8 @@ async function createAdminUser() {
     
     console.log('Creating admin user...');
     const { rows: users } = await pool.query(
-      'INSERT INTO users (email, password, name, role, email_verified) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-      [adminUser.email, adminUser.password, adminUser.name, adminUser.role, adminUser.emailVerified]
+      'INSERT INTO users (email, password, name, mobile, role, email_verified, mobile_verified) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
+      [adminUser.email, adminUser.password, adminUser.name, adminUser.mobile, adminUser.role, adminUser.emailVerified, adminUser.mobileVerified]
     );
     
     console.log('Admin user created successfully:', users[0]);
