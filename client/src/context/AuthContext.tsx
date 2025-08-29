@@ -220,7 +220,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsLoading(false);
     }
   };
-  window.addEventListener("beforeunload", logout);
+
+  // Optional: Add session timeout or other logout mechanisms
+  // For now, we'll only logout manually - no automatic logout on browser close/refresh
+
   return (
     <AuthContext.Provider
       value={{
