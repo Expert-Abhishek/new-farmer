@@ -224,12 +224,12 @@ export default function Account() {
     sendPasswordChangeOtp.mutate(formData);
   };
 
-  // Redirect to login if not authenticated
+  // Redirect to login if not authenticated (but wait for loading to complete)
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (!isLoading && !isAuthenticated) {
       navigate("/login");
     }
-  }, [isAuthenticated, navigate]);
+  }, [isLoading, isAuthenticated, navigate]);
 
   // Update form when user data changes
   useEffect(() => {
@@ -413,6 +413,23 @@ export default function Account() {
       setIsLoading(false);
     }
   };
+
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className="min-h-screen bg-background pt-4">
+          <div className="container mx-auto px-4 py-8 max-w-6xl">
+            <div className="flex justify-center items-center min-h-[400px]">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                <p className="text-muted-foreground">Loading your account...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
 
   if (!isAuthenticated) {
     return null; // We'll redirect in the useEffect

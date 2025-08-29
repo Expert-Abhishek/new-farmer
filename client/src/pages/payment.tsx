@@ -25,7 +25,7 @@ declare global {
 
 export default function Payment() {
   const [, navigate] = useLocation();
-  const { isAuthenticated, token, user } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, token, user } = useAuth();
   const { sessionId, clearCart } = useCart();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
@@ -51,12 +51,12 @@ export default function Payment() {
     });
   }, []);
 
-  // Redirect to login if not authenticated
+  // Redirect to login if not authenticated (but wait for loading to complete)
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (!authLoading && !isAuthenticated) {
       navigate("/login?redirect=payment");
     }
-  }, [isAuthenticated, navigate]);
+  }, [authLoading, isAuthenticated, navigate]);
 
   // Load Razorpay script
   useEffect(() => {
@@ -243,6 +243,23 @@ export default function Payment() {
       setIsLoading(false);
     }
   };
+
+  if (authLoading) {
+    return (
+      <div className="container mx-auto py-10 flex justify-center relative top-16 mb-14">
+        <Card className="w-full max-w-md">
+          <CardContent className="p-8">
+            <div className="flex justify-center items-center min-h-[200px]">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                <p className="text-muted-foreground">Loading payment details...</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   if (!isAuthenticated || !orderDetails) {
     return null;
