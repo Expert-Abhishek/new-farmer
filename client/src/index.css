@@ -99,6 +99,13 @@
     @apply font-body bg-background text-foreground antialiased;
   }
 
+  /* Lighter placeholder text */
+  input::placeholder,
+  textarea::placeholder {
+    color: hsl(var(--muted-foreground)) !important;
+    opacity: 0.6 !important;
+  }
+
   h1,
   h2,
   h3,

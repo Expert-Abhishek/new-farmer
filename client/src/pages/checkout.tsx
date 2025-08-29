@@ -386,7 +386,7 @@ export default function Checkout() {
                         <FormItem>
                           <FormLabel>First Name</FormLabel>
                           <FormControl>
-                            <Input placeholder="Rajesh " {...field} />
+                            <Input placeholder="Enter your first name" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -399,7 +399,7 @@ export default function Checkout() {
                         <FormItem>
                           <FormLabel>Last Name</FormLabel>
                           <FormControl>
-                            <Input placeholder="Sharma" {...field} />
+                            <Input placeholder="Enter your last name" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -414,7 +414,7 @@ export default function Checkout() {
                           <FormControl>
                             <Input
                               type="email"
-                              placeholder="Rajeshsharma@example.com"
+                              placeholder="Enter your email address"
                               {...field}
                             />
                           </FormControl>
@@ -429,7 +429,7 @@ export default function Checkout() {
                         <FormItem>
                           <FormLabel>Phone Number</FormLabel>
                           <FormControl>
-                            <Input placeholder="+91 12344 43210" {...field} />
+                            <Input placeholder="Enter your phone number" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -452,7 +452,7 @@ export default function Checkout() {
                           <FormLabel>Street Address</FormLabel>
                           <FormControl>
                             <Input
-                              placeholder="123, 2nd Cross, Jayanagar"
+                              placeholder="Enter your street address"
                               {...field}
                             />
                           </FormControl>
@@ -468,7 +468,7 @@ export default function Checkout() {
                           <FormItem>
                             <FormLabel>City</FormLabel>
                             <FormControl>
-                              <Input placeholder="Bangalore" {...field} />
+                              <Input placeholder="Enter your city" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -481,7 +481,7 @@ export default function Checkout() {
                           <FormItem>
                             <FormLabel>State</FormLabel>
                             <FormControl>
-                              <Input placeholder="Karnataka" {...field} />
+                              <Input placeholder="Enter your state" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -494,7 +494,7 @@ export default function Checkout() {
                           <FormItem>
                             <FormLabel>ZIP Code</FormLabel>
                             <FormControl>
-                              <Input placeholder="560011" {...field} />
+                              <Input placeholder="Enter your postal code" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -617,7 +617,7 @@ export default function Checkout() {
                         <FormLabel>Order Notes (Optional)</FormLabel>
                         <FormControl>
                           <Textarea
-                            placeholder="Special instructions for delivery or product handling..."
+                            placeholder="Enter special instructions for delivery (optional)"
                             className="min-h-[100px]"
                             {...field}
                           />
