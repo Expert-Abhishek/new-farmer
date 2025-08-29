@@ -72,7 +72,13 @@ export default function Login() {
           <CardDescription>
             Enter your email and password to access your account
           </CardDescription>
-   
+        </CardHeader>
+        <div className="px-6 py-2 mb-2 bg-gray-50 border border-gray-100 rounded-md mx-6">
+          <p className="text-sm text-gray-700 font-medium">Test Account:</p>
+          <p className="text-sm text-gray-600">Email: testuser@example.com</p>
+          <p className="text-sm text-gray-600">Password: password123</p>
+        </div>
+        <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField
