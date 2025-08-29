@@ -179,7 +179,7 @@ export default function AdminSettings() {
   };
 
   const removeLogo = () => {
-    // Simply clear all logo-related state - works for both uploaded files and pasted URLs
+    // Case 4: Clear all logo-related state - works for both uploaded files and pasted URLs
     setLogoFile(null);
     setLogoPreview(null);
     form.setValue("site_logo", "");
@@ -189,6 +189,11 @@ export default function AdminSettings() {
     if (fileInput) {
       fileInput.value = "";
     }
+
+    toast({
+      title: "Logo Removed",
+      description: "Logo has been removed. Click 'Save Settings' to update the changes.",
+    });
 
     // Note: The actual removal from database happens when user clicks "Save" 
     // This gives immediate visual feedback without making API calls
@@ -265,8 +270,15 @@ export default function AdminSettings() {
 
       await updateSettingMutation.mutateAsync(updates);
 
-      // Clear the logo file after successful save
+      // Clear the logo file and update preview after successful save
       setLogoFile(null);
+      
+      // Update logo preview to show the newly saved logo
+      if (logoUrl && logoUrl.trim() !== "") {
+        setLogoPreview(logoUrl);
+      } else {
+        setLogoPreview(null);
+      }
 
       toast({
         title: "Settings Updated",
@@ -364,8 +376,8 @@ export default function AdminSettings() {
 
               {/* Logo Preview - Full width card with left image and right cross */}
               {(logoPreview || 
-                (settingsMap.site_logo && form.watch("site_logo") !== "") ||
-                form.watch("site_logo")) ? (
+                (settingsMap.site_logo && settingsMap.site_logo.trim() !== "") ||
+                (form.watch("site_logo") && form.watch("site_logo").trim() !== "")) ? (
                 <Card className="w-full mb-4">
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between">
@@ -374,9 +386,9 @@ export default function AdminSettings() {
                         <div className="w-16 h-16 border-2 border-gray-200 rounded-lg overflow-hidden bg-white dark:bg-gray-800 shadow-sm">
                           <img
                             src={
-                              logoPreview || // New uploaded file preview
-                              (form.watch("site_logo") && !logoFile ? getImageUrl(form.watch("site_logo")) : null) || // URL input (only if no file upload)
-                              (settingsMap.site_logo && !logoFile && !form.watch("site_logo") ? getImageUrl(settingsMap.site_logo) : null) || // Current saved logo (only if no new input)
+                              logoPreview || // Case 1: New uploaded file preview (highest priority)
+                              (form.watch("site_logo") && form.watch("site_logo").trim() !== "" ? getImageUrl(form.watch("site_logo")) : null) || // Case 3: URL input
+                              (settingsMap.site_logo && settingsMap.site_logo.trim() !== "" ? getImageUrl(settingsMap.site_logo) : null) || // Case 2: Current saved logo
                               placeholderImage // Fallback
                             }
                             alt="Logo preview"
@@ -449,8 +461,10 @@ export default function AdminSettings() {
                     placeholder="https://example.com/logo.png"
                     className="mt-1"
                     onChange={(e) => {
+                      const urlValue = e.target.value.trim();
+                      
                       // When user enters a URL, clear any uploaded file
-                      if (e.target.value.trim()) {
+                      if (urlValue) {
                         setLogoFile(null);
                         setLogoPreview(null);
                         // Reset the file input
@@ -459,8 +473,15 @@ export default function AdminSettings() {
                           fileInput.value = "";
                         }
                       }
-                      // Update form value
-                      form.setValue("site_logo", e.target.value);
+                      
+                      // Update form value and trigger preview update
+                      form.setValue("site_logo", urlValue);
+                      
+                      // If it's a valid URL, show preview immediately for case 3
+                      if (urlValue && (urlValue.startsWith("http://") || urlValue.startsWith("https://"))) {
+                        // Don't set logoPreview here - let the image src logic handle it
+                        // This allows real-time preview as user types URL
+                      }
                     }}
                   />
                   <p className="text-xs text-muted-foreground mt-1">
