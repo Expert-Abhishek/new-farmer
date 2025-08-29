@@ -49,6 +49,7 @@ import {
   inArray,
   and,
   isNotNull,
+  isNull,
   like,
   lte,
   ilike,
@@ -1836,12 +1837,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const user = (req as any).user;
 
-      // Step 1: Fetch all orders for the user
-      const ordersList = await db
+      // Step 1: Fetch all orders for the user (including both logged-in orders and session-based orders)
+      // First get orders with userId (logged-in orders)
+      const userOrders = await db
         .select()
         .from(orders)
         .where(eq(orders.userId, user.id))
         .orderBy(desc(orders.createdAt));
+
+      // For registered users, also check if there are any session-based orders that could be theirs
+      // This is for cases where user placed COD orders as guest and then registered with the same email
+      const sessionOrders = await db
+        .select()
+        .from(orders)
+        .where(
+          and(
+            isNull(orders.userId),
+            sql`${orders.customerInfo}->>'email' = ${user.email}`
+          )
+        )
+        .orderBy(desc(orders.createdAt));
+
+      // Combine both order sets and remove duplicates (by id)
+      const allOrders = [...userOrders, ...sessionOrders];
+      const ordersList = allOrders.filter((order, index, arr) => 
+        arr.findIndex(o => o.id === order.id) === index
+      );
 
       if (!ordersList.length) {
         return res.json({ orders: [] });
@@ -1908,10 +1929,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 id: payment.id,
                 amount: payment.amount,
                 status: payment.status,
-                method: payment.razorpayPaymentId ? "Razorpay" : "Unknown",
+                method: payment.razorpayPaymentId ? "Razorpay" : (order.paymentMethod === "cod" ? "COD" : "Unknown"),
                 razorpayPaymentId: payment.razorpayPaymentId,
               }
-            : null,
+            : (order.paymentMethod === "cod" ? {
+                id: null,
+                amount: order.total,
+                status: "pending",
+                method: "COD",
+                razorpayPaymentId: null,
+              } : null),
           appliedDiscounts: discount
             ? [
                 {
