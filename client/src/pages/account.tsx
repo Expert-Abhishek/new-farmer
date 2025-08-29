@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -224,22 +224,7 @@ export default function Account() {
     sendPasswordChangeOtp.mutate(formData);
   };
 
-  // Check localStorage directly for immediate authentication check
-  useEffect(() => {
-    const storedToken = localStorage.getItem("token");
-    const storedUser = localStorage.getItem("user");
-    
-    // If no stored credentials, redirect immediately without waiting for context loading
-    if (!storedToken || !storedUser) {
-      navigate("/login");
-      return;
-    }
-    
-    // If we have stored credentials but context hasn't loaded yet, wait for it
-    if (!isLoading && !isAuthenticated) {
-      navigate("/login");
-    }
-  }, [isLoading, isAuthenticated, navigate]);
+  // No redirect useEffect needed - let the render logic handle authentication
 
   // Update form when user data changes
   useEffect(() => {
@@ -424,16 +409,23 @@ export default function Account() {
     }
   };
 
-  // Check localStorage immediately for instant authentication check
-  const storedToken = localStorage.getItem("token");
-  const storedUser = localStorage.getItem("user");
-
-  // If no stored credentials, don't render anything (will redirect)
-  if (!storedToken || !storedUser) {
-    return null;
+  // Handle authentication like order-history page - no redirects, just show login UI
+  if (!isAuthenticated) {
+    return (
+      <Layout>
+        <div className="container mx-auto py-10 text-center relative top-[10rem] mb-[15rem]">
+          <h1 className="text-2xl font-bold mb-4">Please Log In</h1>
+          <p className="text-gray-600 mb-6">
+            You need to be logged in to access your account.
+          </p>
+          <Link href="/login">
+            <Button>Go to Login</Button>
+          </Link>
+        </div>
+      </Layout>
+    );
   }
 
-  // Show loading while context is initializing
   if (isLoading) {
     return (
       <Layout>
@@ -449,11 +441,6 @@ export default function Account() {
         </div>
       </Layout>
     );
-  }
-
-  // Final check - if context loaded but not authenticated, don't render
-  if (!isAuthenticated) {
-    return null;
   }
 
   return (

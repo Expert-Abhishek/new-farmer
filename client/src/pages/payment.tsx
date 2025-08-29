@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 import {
   Card,
   CardContent,
@@ -51,22 +51,7 @@ export default function Payment() {
     });
   }, []);
 
-  // Check localStorage directly for immediate authentication check
-  useEffect(() => {
-    const storedToken = localStorage.getItem("token");
-    const storedUser = localStorage.getItem("user");
-    
-    // If no stored credentials, redirect immediately
-    if (!storedToken || !storedUser) {
-      navigate("/login?redirect=payment");
-      return;
-    }
-    
-    // If we have stored credentials but context hasn't loaded yet, wait for it
-    if (!authLoading && !isAuthenticated) {
-      navigate("/login?redirect=payment");
-    }
-  }, [authLoading, isAuthenticated, navigate]);
+  // No redirect useEffect needed - let the render logic handle authentication
 
   // Load Razorpay script
   useEffect(() => {
@@ -254,16 +239,21 @@ export default function Payment() {
     }
   };
 
-  // Check localStorage immediately for instant authentication check
-  const storedToken = localStorage.getItem("token");
-  const storedUser = localStorage.getItem("user");
-
-  // If no stored credentials, don't render anything (will redirect)
-  if (!storedToken || !storedUser) {
-    return null;
+  // Handle authentication like order-history page - no redirects, just show login UI
+  if (!isAuthenticated) {
+    return (
+      <div className="container mx-auto py-10 text-center relative top-[10rem] mb-[15rem]">
+        <h1 className="text-2xl font-bold mb-4">Please Log In</h1>
+        <p className="text-gray-600 mb-6">
+          You need to be logged in to access payment details.
+        </p>
+        <Link href="/login">
+          <Button>Go to Login</Button>
+        </Link>
+      </div>
+    );
   }
 
-  // Show loading while context is initializing
   if (authLoading) {
     return (
       <div className="container mx-auto py-10 flex justify-center relative top-16 mb-14">
@@ -281,8 +271,7 @@ export default function Payment() {
     );
   }
 
-  // Final check - if context loaded but not authenticated, don't render
-  if (!isAuthenticated || !orderDetails) {
+  if (!orderDetails) {
     return null;
   }
 
