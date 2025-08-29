@@ -215,10 +215,7 @@ export default function AdminSettings() {
         fileInput.value = "";
       }
 
-      toast({
-        title: "Logo removed",
-        description: "The site logo has been removed successfully.",
-      });
+      // No toast notification - user will see the change immediately and can save when ready
     } catch (error) {
       toast({
         title: "Error",
@@ -459,7 +456,7 @@ export default function AdminSettings() {
                     variant="outline"
                     size="sm"
                     onClick={removeLogo}
-                    className="text-destructive hover:bg-destructive/10"
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-950/20"
                   >
                     <X className="h-4 w-4" />
                   </Button>
