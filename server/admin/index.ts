@@ -357,5 +357,48 @@ adminRouter.patch(
   }
 );
 
+// Discount/Coupon routes  
+adminRouter.get("/discounts", authenticateAdmin, async (req: Request, res: Response) => {
+  try {
+    const discounts = await storage.getAllDiscounts();
+    res.json(discounts);
+  } catch (error) {
+    console.error("Error fetching discounts:", error);
+    res.status(500).json({ message: "Failed to fetch discounts" });
+  }
+});
+
+adminRouter.post("/discounts", authenticateAdmin, async (req: Request, res: Response) => {
+  try {
+    const discount = await storage.createDiscount(req.body);
+    res.status(201).json(discount);
+  } catch (error) {
+    console.error("Error creating discount:", error);
+    res.status(500).json({ message: "Failed to create discount" });
+  }
+});
+
+adminRouter.put("/discounts/:id", authenticateAdmin, async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const discount = await storage.updateDiscount(parseInt(id), req.body);
+    res.json(discount);
+  } catch (error) {
+    console.error("Error updating discount:", error);
+    res.status(500).json({ message: "Failed to update discount" });
+  }
+});
+
+adminRouter.delete("/discounts/:id", authenticateAdmin, async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    await storage.deleteDiscount(parseInt(id));
+    res.json({ message: "Discount deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting discount:", error);
+    res.status(500).json({ message: "Failed to delete discount" });
+  }
+});
+
 export default adminRouter;
 export { authenticateAdmin };
