@@ -112,7 +112,25 @@ const authenticate = async (
     (req as any).user = user;
     next();
   } catch (error) {
-    console.error("Authentication error:", error);
+    console.error("Authentication error:", {
+      error: error.message,
+      authHeader: req.headers.authorization ? "Present" : "Missing",
+      userAgent: req.headers["user-agent"],
+      url: req.url
+    });
+    
+    if (error.name === "TokenExpiredError") {
+      return res.status(401).json({ 
+        message: "Authentication token has expired",
+        expiredToken: true 
+      });
+    } else if (error.name === "JsonWebTokenError") {
+      return res.status(401).json({ 
+        message: "Invalid authentication token",
+        invalidToken: true 
+      });
+    }
+    
     return res.status(401).json({ message: "Authentication failed" });
   }
 };

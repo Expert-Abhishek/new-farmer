@@ -145,7 +145,19 @@ export default function OrderHistory() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to fetch order history");
+        // Handle specific authentication errors
+        if (response.status === 401) {
+          localStorage.removeItem("token");
+          throw new Error("Please log in again to view your orders");
+        } else if (response.status === 403) {
+          const data = await response.json();
+          if (data.forceLogout) {
+            localStorage.removeItem("token");
+            throw new Error("Email verification required. Please contact support.");
+          }
+          throw new Error(data.message || "Access denied");
+        }
+        throw new Error(`Failed to fetch orders (Status: ${response.status})`);
       }
 
       return response.json();
@@ -263,12 +275,35 @@ export default function OrderHistory() {
   }
 
   if (error) {
+    const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
     return (
       <div className="container mx-auto py-10 relative top-16 text-center mb-12">
-        <h1 className="text-2xl font-bold mb-4">Error Loading Orders</h1>
-        <p className="text-gray-600">
-          Failed to load your order history. Please try again later.
-        </p>
+        <div className="max-w-md mx-auto">
+          <Package className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+          <h1 className="text-2xl font-bold mb-4 text-gray-900">Unable to Load Orders</h1>
+          <p className="text-gray-600 mb-6">
+            {errorMessage}
+          </p>
+          {errorMessage.includes("log in again") ? (
+            <Link href="/login">
+              <Button className="mr-2">Login Again</Button>
+            </Link>
+          ) : errorMessage.includes("verification") ? (
+            <Button 
+              onClick={() => window.location.href = "mailto:support@freshlyrooted.in"}
+              variant="outline"
+            >
+              Contact Support
+            </Button>
+          ) : (
+            <Button 
+              onClick={() => window.location.reload()}
+              variant="outline"
+            >
+              Try Again
+            </Button>
+          )}
+        </div>
       </div>
     );
   }
