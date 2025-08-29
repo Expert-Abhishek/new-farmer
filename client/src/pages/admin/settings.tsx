@@ -178,16 +178,53 @@ export default function AdminSettings() {
     }
   };
 
-  const removeLogo = () => {
-    setLogoFile(null);
-    setLogoPreview(null);
-    form.setValue("site_logo", "");
-    // Reset the file input
-    const fileInput = document.getElementById(
-      "logo-upload"
-    ) as HTMLInputElement;
-    if (fileInput) {
-      fileInput.value = "";
+  const removeLogo = async () => {
+    try {
+      // First, delete the image file from server if it's an uploaded file
+      const currentLogo = settingsMap.site_logo;
+      if (currentLogo && (currentLogo.startsWith("/uploads/") || currentLogo.includes("@fs"))) {
+        try {
+          await apiRequest("/api/images/delete/product-image", {
+            method: "DELETE",
+            body: JSON.stringify({ imagePath: currentLogo }),
+          });
+        } catch (error) {
+          console.warn("Failed to delete image file:", error);
+          // Continue with removing from database even if file deletion fails
+        }
+      }
+
+      // Update the database to remove the logo setting
+      await updateSettingMutation.mutateAsync([
+        {
+          key: "site_logo",
+          value: "",
+          type: "text",
+          description: "Website logo URL",
+        },
+      ]);
+
+      // Clear local state
+      setLogoFile(null);
+      setLogoPreview(null);
+      form.setValue("site_logo", "");
+      
+      // Reset the file input
+      const fileInput = document.getElementById("logo-upload") as HTMLInputElement;
+      if (fileInput) {
+        fileInput.value = "";
+      }
+
+      toast({
+        title: "Logo removed",
+        description: "The site logo has been removed successfully.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to remove logo. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
