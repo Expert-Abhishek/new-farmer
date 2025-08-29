@@ -1912,6 +1912,10 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteDiscount(id: number): Promise<void> {
+    // First, delete any related discount usage records to avoid foreign key constraint violation
+    await db.delete(discountUsage).where(eq(discountUsage.discountId, id));
+    
+    // Then delete the discount itself
     await db.delete(discounts).where(eq(discounts.id, id));
   }
 

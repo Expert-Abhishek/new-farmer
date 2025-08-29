@@ -392,8 +392,21 @@ adminRouter.put("/discounts/:id", authenticateAdmin, async (req: Request, res: R
 adminRouter.delete("/discounts/:id", authenticateAdmin, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    await storage.deleteDiscount(parseInt(id));
-    res.json({ message: "Discount deleted successfully" });
+    const discountId = parseInt(id);
+    
+    if (isNaN(discountId)) {
+      return res.status(400).json({ message: "Invalid discount ID" });
+    }
+    
+    // Check if discount exists
+    const discount = await storage.getDiscountById(discountId);
+    if (!discount) {
+      return res.status(404).json({ message: "Discount not found" });
+    }
+    
+    // Delete the discount (this will also delete related usage records)
+    await storage.deleteDiscount(discountId);
+    res.json({ message: "Discount and all related usage records deleted successfully" });
   } catch (error) {
     console.error("Error deleting discount:", error);
     res.status(500).json({ message: "Failed to delete discount" });
