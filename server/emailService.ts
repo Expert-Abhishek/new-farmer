@@ -22,6 +22,7 @@ interface OrderEmailData {
 interface SiteInfo {
   siteName: string;
   siteTagline: string;
+  siteLogo: string;
   baseUrl: string;
 }
 
@@ -55,6 +56,7 @@ class EmailService {
       const settings = await this.getSiteSettings();
       const siteNameSetting = settings.find(s => s.key === 'site_name');
       const siteTaglineSetting = settings.find(s => s.key === 'site_tagline');
+      const siteLogoSetting = settings.find(s => s.key === 'site_logo');
       
       // Use environment variable for base URL, fallback to Replit domain or localhost
       const baseUrl = process.env.VITE_API_URL || 
@@ -63,6 +65,7 @@ class EmailService {
       return {
         siteName: siteNameSetting?.value || 'Freshly Rooted',
         siteTagline: siteTaglineSetting?.value || 'Fresh from Farm to Table',
+        siteLogo: siteLogoSetting?.value || '',
         baseUrl
       };
     } catch (error) {
@@ -73,6 +76,7 @@ class EmailService {
       return {
         siteName: 'Freshly Rooted',
         siteTagline: 'Fresh from Farm to Table',
+        siteLogo: '',
         baseUrl
       };
     }
@@ -474,6 +478,127 @@ class EmailService {
       console.log("Email change verification sent successfully:", mail);
     } catch (error) {
       console.log("Error sending email change verification:", error);
+      throw error;
+    }
+  }
+
+  async sendTrackingUpdateNotification(
+    customerEmail: string,
+    customerName: string,
+    orderId: string,
+    oldTrackingId: string,
+    newTrackingId: string
+  ): Promise<void> {
+    const siteInfo = await this.getSiteInfo();
+    
+    // Create logo URL if site logo exists
+    let logoUrl = '';
+    if (siteInfo.siteLogo) {
+      // Check if it's already a full URL
+      if (siteInfo.siteLogo.startsWith('http')) {
+        logoUrl = siteInfo.siteLogo;
+      } else {
+        // It's a relative path, make it absolute
+        logoUrl = `${siteInfo.baseUrl}${siteInfo.siteLogo.startsWith('/') ? '' : '/'}${siteInfo.siteLogo}`;
+      }
+    }
+
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Order Tracking Updated</title>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; }
+          .header { background-color: #2d5016; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+          .logo { max-width: 120px; height: auto; margin-bottom: 10px; }
+          .content { background-color: white; padding: 30px; border-radius: 0 0 8px 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+          .tracking-update { background-color: #e8f5e8; border: 1px solid #c8e6c8; padding: 20px; border-radius: 6px; margin: 20px 0; }
+          .tracking-box { background-color: #f8f9fa; border: 2px dashed #2d5016; padding: 15px; border-radius: 6px; text-align: center; margin: 10px 0; }
+          .old-tracking { background-color: #fff3cd; border-color: #ffeaa7; color: #856404; }
+          .new-tracking { background-color: #d4edda; border-color: #c3e6cb; color: #155724; }
+          .track-button { display: inline-block; background-color: #2d5016; color: white; padding: 15px 30px; text-decoration: none; border-radius: 6px; margin: 20px 0; font-weight: bold; }
+          .info { background-color: #d1ecf1; border: 1px solid #bee5eb; padding: 15px; border-radius: 6px; margin: 20px 0; color: #0c5460; }
+          .footer { text-align: center; margin-top: 30px; color: #666; font-size: 14px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            ${logoUrl ? `<img src="${logoUrl}" alt="${siteInfo.siteName}" class="logo" />` : ''}
+            <h1>📦 Tracking ID Updated</h1>
+            <p>${siteInfo.siteName} - ${siteInfo.siteTagline}</p>
+          </div>
+          <div class="content">
+            <h2>Hello ${customerName}!</h2>
+            <p>Good news! Your order tracking information has been updated with the latest details from our logistics partner.</p>
+            
+            <div class="tracking-update">
+              <h3>📋 Tracking Update Details</h3>
+              <p><strong>Order ID:</strong> #${orderId}</p>
+              <p><strong>Updated on:</strong> ${new Date().toLocaleString("en-IN", {
+                timeZone: "Asia/Kolkata",
+                dateStyle: "full",
+                timeStyle: "short",
+              })}</p>
+              
+              <div class="tracking-box old-tracking">
+                <strong>Previous Tracking ID:</strong><br>
+                <code style="font-size: 16px; font-weight: bold;">${oldTrackingId}</code>
+              </div>
+              
+              <div style="text-align: center; margin: 15px 0;">
+                <span style="font-size: 24px;">⬇️</span>
+              </div>
+              
+              <div class="tracking-box new-tracking">
+                <strong>New Tracking ID:</strong><br>
+                <code style="font-size: 16px; font-weight: bold;">${newTrackingId}</code>
+              </div>
+            </div>
+            
+            <div class="info">
+              <strong>🔍 What does this mean?</strong>
+              <ul>
+                <li>Your order is being processed by our logistics partner</li>
+                <li>The new tracking ID provides more accurate delivery updates</li>
+                <li>You can use this new tracking ID to monitor your shipment</li>
+                <li>All future notifications will use the new tracking ID</li>
+              </ul>
+            </div>
+            
+            <div style="text-align: center;">
+              <a href="${siteInfo.baseUrl}/track-order" class="track-button">Track Your Order</a>
+            </div>
+            
+            <p><strong>💡 Pro Tip:</strong> Save the new tracking ID for easy reference. You can track your order anytime on our website or through your logistics partner's tracking page.</p>
+            
+            <p>If you have any questions about your order or delivery, please don't hesitate to contact our support team.</p>
+            
+            <div class="footer">
+              <p>Thank you for choosing ${siteInfo.siteName}!</p>
+              <p>Best regards,<br>The ${siteInfo.siteName} Team</p>
+              <p><small>This is an automated notification. Please do not reply to this message.</small></p>
+            </div>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    try {
+      const mail = await this.transporter.sendMail({
+        from: `"${this.fromName}" <${this.from}>`,
+        to: customerEmail,
+        subject: `📦 Order #${orderId} Tracking Updated - ${siteInfo.siteName}`,
+        html,
+      });
+      console.log(`Tracking update email sent successfully to ${customerEmail}:`, mail.messageId);
+    } catch (error) {
+      console.error("Error sending tracking update email:", error);
       throw error;
     }
   }

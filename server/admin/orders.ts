@@ -35,6 +35,8 @@ import {
   ilike,
 } from "drizzle-orm";
 import { storage } from "server/storage";
+// Import EmailService to create an instance for sending emails
+import { EmailService } from "server/emailService";
 
 // abhi
 // Get monthly sales for current year
@@ -966,6 +968,48 @@ export const updateOrderTracking = async (req: Request, res: Response) => {
       });
     }
 
+    // First, get the current order data (including old tracking ID and customer info)
+    const currentOrder = await db
+      .select()
+      .from(orders)
+      .where(eq(orders.id, parseInt(orderId)))
+      .limit(1);
+
+    if (!currentOrder.length) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+    }
+
+    const orderData = currentOrder[0];
+    const oldTrackingId = orderData.trackingId || "Not set";
+
+    // Get customer information
+    let customerEmail = '';
+    let customerName = '';
+
+    if (orderData.userId) {
+      // Registered user - get from users table
+      const customerData = await db
+        .select({
+          email: users.email,
+          name: users.name,
+        })
+        .from(users)
+        .where(eq(users.id, orderData.userId))
+        .limit(1);
+
+      if (customerData.length) {
+        customerEmail = customerData[0].email;
+        customerName = customerData[0].name;
+      }
+    } else {
+      // Guest checkout - extract from shipping address or use order data
+      customerEmail = orderData.customerEmail || '';
+      customerName = orderData.customerName || 'Valued Customer';
+    }
+
     // Update the order with Drizzle ORM
     const [updatedOrder] = await db
       .update(orders)
@@ -979,14 +1023,33 @@ export const updateOrderTracking = async (req: Request, res: Response) => {
     if (!updatedOrder) {
       return res.status(404).json({
         success: false,
-        message: "Order not found",
+        message: "Order not found during update",
       });
+    }
+
+    // Send email notification if customer email is available
+    if (customerEmail) {
+      try {
+        // Create EmailService instance with storage callback
+        const emailServiceInstance = new EmailService(() => storage.getAllSiteSettings());
+        await emailServiceInstance.sendTrackingUpdateNotification(
+          customerEmail,
+          customerName,
+          orderId,
+          oldTrackingId,
+          trackingId
+        );
+        console.log(`Tracking update email sent to ${customerEmail} for order #${orderId}`);
+      } catch (emailError) {
+        console.error("Error sending tracking update email:", emailError);
+        // Don't fail the request if email fails, just log the error
+      }
     }
 
     res.json({
       success: true,
       order: updatedOrder,
-      message: "Tracking ID updated successfully",
+      message: "Tracking ID updated successfully" + (customerEmail ? " and customer notified by email" : ""),
     });
   } catch (error) {
     console.error("Error updating tracking ID:", error);
