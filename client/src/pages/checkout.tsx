@@ -386,7 +386,7 @@ export default function Checkout() {
                         <FormItem>
                           <FormLabel>First Name</FormLabel>
                           <FormControl>
-                            <Input placeholder="Enter your first name" {...field} />
+                            <Input placeholder="Enter first name" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -399,7 +399,7 @@ export default function Checkout() {
                         <FormItem>
                           <FormLabel>Last Name</FormLabel>
                           <FormControl>
-                            <Input placeholder="Enter your last name" {...field} />
+                            <Input placeholder="Enter last name" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -414,7 +414,7 @@ export default function Checkout() {
                           <FormControl>
                             <Input
                               type="email"
-                              placeholder="Enter your email address"
+                              placeholder="Enter email address"
                               {...field}
                             />
                           </FormControl>
@@ -429,7 +429,10 @@ export default function Checkout() {
                         <FormItem>
                           <FormLabel>Phone Number</FormLabel>
                           <FormControl>
-                            <Input placeholder="Enter your phone number" {...field} />
+                            <Input
+                              placeholder="Enter phone number"
+                              {...field}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -452,7 +455,7 @@ export default function Checkout() {
                           <FormLabel>Street Address</FormLabel>
                           <FormControl>
                             <Input
-                              placeholder="Enter your street address"
+                              placeholder="Enter street address"
                               {...field}
                             />
                           </FormControl>
@@ -468,7 +471,7 @@ export default function Checkout() {
                           <FormItem>
                             <FormLabel>City</FormLabel>
                             <FormControl>
-                              <Input placeholder="Enter your city" {...field} />
+                              <Input placeholder="Enter city" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -481,7 +484,7 @@ export default function Checkout() {
                           <FormItem>
                             <FormLabel>State</FormLabel>
                             <FormControl>
-                              <Input placeholder="Enter your state" {...field} />
+                              <Input placeholder="Enter state" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -494,7 +497,10 @@ export default function Checkout() {
                           <FormItem>
                             <FormLabel>ZIP Code</FormLabel>
                             <FormControl>
-                              <Input placeholder="Enter your postal code" {...field} />
+                              <Input
+                                placeholder="Enter postal code"
+                                {...field}
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
