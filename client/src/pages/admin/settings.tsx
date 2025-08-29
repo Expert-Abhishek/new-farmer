@@ -173,7 +173,7 @@ export default function AdminSettings() {
       };
       reader.readAsDataURL(file);
 
-      // Clear the URL field when uploading a file
+      // Clear the URL field when uploading a file - user should use either file upload OR URL, not both
       form.setValue("site_logo", "");
     }
   };
@@ -277,9 +277,9 @@ export default function AdminSettings() {
         const uploadData = await uploadResponse.json();
         logoUrl = uploadData.imagePath;
 
-        // Update the form field with the uploaded image path
-        form.setValue("site_logo", logoUrl);
-
+        // Don't update the form field - keep URL field empty when using file upload
+        // The logoUrl will be used directly to save to database
+        
         toast({
           title: "Logo uploaded successfully",
           description: "Your site logo has been uploaded and will be updated.",
@@ -504,6 +504,20 @@ export default function AdminSettings() {
                     {...form.register("site_logo")}
                     placeholder="https://example.com/logo.png"
                     className="mt-1"
+                    onChange={(e) => {
+                      // When user enters a URL, clear any uploaded file
+                      if (e.target.value.trim()) {
+                        setLogoFile(null);
+                        setLogoPreview(null);
+                        // Reset the file input
+                        const fileInput = document.getElementById("logo-upload") as HTMLInputElement;
+                        if (fileInput) {
+                          fileInput.value = "";
+                        }
+                      }
+                      // Update form value
+                      form.setValue("site_logo", e.target.value);
+                    }}
                   />
                   <p className="text-xs text-muted-foreground mt-1">
                     Direct link to your logo image
