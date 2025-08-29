@@ -34,31 +34,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   // Load user data from localStorage on initial load
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
     const storedUser = localStorage.getItem("user");
 
-    console.log("AuthContext: Loading from localStorage", { 
-      hasToken: !!storedToken, 
-      hasUser: !!storedUser 
-    });
+
 
     if (storedToken && storedUser) {
       try {
+        const parsedUser = JSON.parse(storedUser);
         setToken(storedToken);
-        setUser(JSON.parse(storedUser));
-        console.log("AuthContext: Successfully loaded user from localStorage");
+        setUser(parsedUser);
+        setIsAuthenticated(true);
+
       } catch (error) {
-        console.error("AuthContext: Error parsing stored user", error);
+
         localStorage.removeItem("token");
         localStorage.removeItem("user");
+        setIsAuthenticated(false);
       }
+    } else {
+      setIsAuthenticated(false);
     }
 
     setIsLoading(false);
-    console.log("AuthContext: Loading complete");
+
   }, []);
 
   const login = async (email: string, password: string): Promise<boolean> => {
@@ -91,6 +94,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Update state
       setToken(data.token);
       setUser(data.user);
+      setIsAuthenticated(true);
 
       toast({
         title: "Login successful",
@@ -172,6 +176,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Update state
     setToken(null);
     setUser(null);
+    setIsAuthenticated(false);
 
     // Invalidate all queries
     // queryClient.invalidateQueries();
@@ -242,7 +247,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       value={{
         user,
         token,
-        isAuthenticated: !!token,
+        isAuthenticated,
         isLoading,
         login,
         register,

@@ -226,15 +226,7 @@ export default function Account() {
 
   // Redirect to login if not authenticated (but wait for loading to complete)
   useEffect(() => {
-    console.log("Account page: Auth state check", { 
-      isLoading, 
-      isAuthenticated, 
-      user: !!user,
-      token: !!token 
-    });
-    
     if (!isLoading && !isAuthenticated) {
-      console.log("Account page: Redirecting to login - not authenticated");
       navigate("/login");
     }
   }, [isLoading, isAuthenticated, navigate, user, token]);
