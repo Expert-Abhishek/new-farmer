@@ -87,20 +87,7 @@ export default function Checkout() {
   const userCodEnabled =
     !isAuthenticated || codAccessLoading || codData?.codEnabled !== false;
 
-  // Calculate total with discount
-  const calculateTotal = () => {
-    let finalTotal = subtotal + shipping;
-    if (appliedDiscount) {
-      if (appliedDiscount.type === "percentage") {
-        finalTotal = finalTotal - (finalTotal * appliedDiscount.value) / 100;
-      } else if (appliedDiscount.type === "fixed") {
-        finalTotal = Math.max(0, finalTotal - appliedDiscount.value);
-      } else if (appliedDiscount.type === "shipping") {
-        finalTotal = finalTotal - shipping;
-      }
-    }
-    return finalTotal;
-  };
+
 
   const applyDiscount = async (discountId: string) => {
     if (!discountId) {
@@ -201,6 +188,28 @@ export default function Checkout() {
     resolver: zodResolver(formSchema),
     defaultValues: getDefaultValues(),
   });
+
+  // Calculate total with discount and COD convenience fee
+  const calculateTotal = () => {
+    let finalTotal = subtotal + shipping;
+    
+    // Add COD convenience fee if COD payment method is selected
+    const selectedPaymentMethod = form.watch("paymentMethod");
+    if (selectedPaymentMethod === "cod") {
+      finalTotal += 8; // ₹8 COD convenience fee
+    }
+    
+    if (appliedDiscount) {
+      if (appliedDiscount.type === "percentage") {
+        finalTotal = finalTotal - (finalTotal * appliedDiscount.value) / 100;
+      } else if (appliedDiscount.type === "fixed") {
+        finalTotal = Math.max(0, finalTotal - appliedDiscount.value);
+      } else if (appliedDiscount.type === "shipping") {
+        finalTotal = finalTotal - shipping;
+      }
+    }
+    return finalTotal;
+  };
 
   // Update form values when user authentication status or user data changes
   useEffect(() => {
@@ -858,6 +867,14 @@ export default function Checkout() {
                     )}
                   </span>
                 </div>
+
+                {/* COD Convenience Fee */}
+                {form.watch("paymentMethod") === "cod" && (
+                  <div className="flex justify-between text-orange-600">
+                    <span>COD Convenience Fee</span>
+                    <span>₹8.00</span>
+                  </div>
+                )}
 
                 {appliedDiscount && (
                   <div className="flex justify-between text-green-600">
