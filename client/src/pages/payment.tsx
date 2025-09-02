@@ -80,7 +80,26 @@ export default function Payment() {
   }, [toast]);
 
   const handlePayment = async () => {
-    if (!orderDetails || !token || !user) return;
+    // Check authentication first
+    if (!isAuthenticated || !token || !user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please login to continue with payment.",
+        variant: "destructive",
+      });
+      navigate("/login");
+      return;
+    }
+
+    if (!orderDetails) {
+      toast({
+        title: "Error",
+        description: "Order details not found. Please try again.",
+        variant: "destructive",
+      });
+      navigate("/checkout");
+      return;
+    }
 
     try {
       setIsLoading(true);
@@ -119,7 +138,7 @@ export default function Payment() {
       //     currency: orderDetails.currency,
       //   }),
       // });
-      // abhi
+      // Initialize payment with proper error handling
       const data = await apiRequest("/api/payments/initialize", {
         method: "POST",
         body: JSON.stringify({
@@ -222,8 +241,21 @@ export default function Payment() {
           variant: "destructive",
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Payment initialization error:", error);
+      
+      // Handle authentication errors specifically
+      if (error.message.includes("Authentication required") || 
+          error.message.includes("401")) {
+        toast({
+          title: "Authentication Error",
+          description: "Please login again to continue with payment.",
+          variant: "destructive",
+        });
+        navigate("/login");
+        return;
+      }
+      
       let errorMessage = "Failed to initialize payment";
       if (error instanceof Error) {
         errorMessage = error.message;

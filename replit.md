@@ -26,6 +26,7 @@ The application utilizes a client-server architecture.
 - **Authentication**: Implements SMS OTP verification for user registration and password changes, integrating with Fast2SMS. Secure password hashing (bcrypt) and authentication middleware are employed.
 - **Admin Functionality**: Includes order management, discount management, and order cancellation processing.
 - **Shipping Integration**: Integrates with India Post API for real-time shipping rates, tracking, and Cash on Delivery (COD) services, including automated weight-based shipping calculations.
+- **Payment Processing**: COD orders include ₹8 convenience fee automatically calculated and displayed in checkout summary.
 
 ### System Design Choices
 - **Deployment**: Configured for deployment on Replit, supporting both development and production environments.
