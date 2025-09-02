@@ -80,15 +80,6 @@ export default function Payment() {
   }, [toast]);
 
   const handlePayment = async () => {
-    // Debug authentication state
-    console.log("Payment authentication check:", {
-      isAuthenticated,
-      hasToken: !!token,
-      hasUser: !!user,
-      localStorage_token: localStorage.getItem("token"),
-      user_email: user?.email
-    });
-
     // Check authentication first
     if (!isAuthenticated || !token || !user) {
       toast({
@@ -147,14 +138,7 @@ export default function Payment() {
       //     currency: orderDetails.currency,
       //   }),
       // });
-      // Debug payment initialization request
-      console.log("Sending payment initialization request:", {
-        amount: orderDetails.amount,
-        currency: orderDetails.currency,
-        token_in_localStorage: localStorage.getItem("token")
-      });
-
-      // Initialize payment with proper error handling
+      // Initialize payment with the server
       const data = await apiRequest("/api/payments/initialize", {
         method: "POST",
         body: JSON.stringify({
@@ -162,8 +146,6 @@ export default function Payment() {
           currency: orderDetails.currency,
         }),
       });
-
-      console.log("Payment initialization response:", data);
 
       console.log("Payment initialization successful:", orderDetails);
       const customerInfo = JSON.parse(
