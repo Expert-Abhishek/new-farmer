@@ -141,6 +141,10 @@ export default function Payment() {
       // Initialize payment with the server
       const data = await apiRequest("/api/payments/initialize", {
         method: "POST",
+            headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({
           amount: orderDetails.amount,
           currency: orderDetails.currency,
