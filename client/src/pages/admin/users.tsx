@@ -19,6 +19,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Mail,
+  Pencil,
+  EyeOff,
 } from "lucide-react";
 import {
   Select,
@@ -73,6 +75,17 @@ export default function AdminUsers() {
   const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [isBlockDialogOpen, setIsBlockDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [editForm, setEditForm] = useState({
+    email: "",
+    password: "",
+  });
+  const [editFormErrors, setEditFormErrors] = useState({
+    email: "",
+    password: "",
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [totalPages, setTotalPages] = useState(1);
@@ -247,6 +260,113 @@ export default function AdminUsers() {
     setIsBlockDialogOpen(true);
   };
 
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const validatePassword = (password: string) => {
+    if (password.length === 0) return { isValid: true, error: "" }; // Allow empty password (no change)
+    
+    if (password.length < 6) {
+      return { isValid: false, error: "Password must be at least 6 characters long" };
+    }
+    
+    const specialCharRegex = /[!@#$%^&*(),.?":{}|<>]/;
+    if (!specialCharRegex.test(password)) {
+      return { isValid: false, error: "Password must contain at least 1 special character" };
+    }
+    
+    return { isValid: true, error: "" };
+  };
+
+  const validateForm = () => {
+    const errors = {
+      email: "",
+      password: "",
+    };
+
+    if (!editForm.email.trim()) {
+      errors.email = "Email is required";
+    } else if (!validateEmail(editForm.email)) {
+      errors.email = "Please enter a valid email address";
+    }
+
+    if (editForm.password) {
+      const passwordValidation = validatePassword(editForm.password);
+      if (!passwordValidation.isValid) {
+        errors.password = passwordValidation.error;
+      }
+    }
+
+    setEditFormErrors(errors);
+    return !errors.email && !errors.password;
+  };
+
+  const handleSaveChanges = async () => {
+    if (!validateForm()) return;
+
+    setIsSubmitting(true);
+    try {
+      const token = localStorage.getItem("adminToken");
+      if (!token) {
+        throw new Error("No authentication token found");
+      }
+
+      const response = await fetch(`/api/admin/users/${selectedUser?.id}/details`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: editForm.email,
+          password: editForm.password || undefined, // Only send password if provided
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to update user");
+      }
+
+      const data = await response.json();
+      
+      // Refresh the users list
+      await fetchUsers();
+      
+      toast({
+        title: "Success",
+        description: data.message,
+      });
+      
+      setIsEditDialogOpen(false);
+    } catch (error) {
+      console.error("Error updating user:", error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to update user. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const openEditDialog = (user: UserData) => {
+    setSelectedUser(user);
+    setEditForm({
+      email: user.email,
+      password: "",
+    });
+    setEditFormErrors({
+      email: "",
+      password: "",
+    });
+    setIsEditDialogOpen(true);
+    setShowPassword(false);
+  };
+
   const getInitials = (name: string) => {
     return name
       .split(" ")
@@ -402,6 +522,13 @@ export default function AdminUsers() {
                               onClick={() => openViewDialog(user)}
                             >
                               <Eye className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => openEditDialog(user)}
+                            >
+                              <Pencil className="h-4 w-4" />
                             </Button>
                             <Button
                               variant="ghost"
@@ -575,6 +702,95 @@ export default function AdminUsers() {
               }
             >
               {selectedUser?.emailVerified ? "Block User" : "Unblock User"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit User Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit User</DialogTitle>
+            <DialogDescription>
+              Update email and password for {selectedUser?.name}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium text-muted-foreground">
+                Email
+              </label>
+              <Input
+                type="email"
+                value={editForm.email}
+                onChange={(e) => {
+                  setEditForm({ ...editForm, email: e.target.value });
+                  if (editFormErrors.email) {
+                    setEditFormErrors({ ...editFormErrors, email: "" });
+                  }
+                }}
+                placeholder="Enter email address"
+                className={`mt-1 ${editFormErrors.email ? "border-red-500" : ""}`}
+              />
+              {editFormErrors.email && (
+                <p className="text-sm text-red-500 mt-1">{editFormErrors.email}</p>
+              )}
+            </div>
+            <div>
+              <label className="text-sm font-medium text-muted-foreground">
+                Password
+              </label>
+              <div className="relative mt-1">
+                <Input
+                  type={showPassword ? "text" : "password"}
+                  value={editForm.password}
+                  onChange={(e) => {
+                    setEditForm({ ...editForm, password: e.target.value });
+                    if (editFormErrors.password) {
+                      setEditFormErrors({ ...editFormErrors, password: "" });
+                    }
+                  }}
+                  placeholder="Enter new password (leave empty to keep current)"
+                  className={`pr-10 ${editFormErrors.password ? "border-red-500" : ""}`}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent hover:text-green-950"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
+              {editFormErrors.password && (
+                <p className="text-sm text-red-500 mt-1">{editFormErrors.password}</p>
+              )}
+              <p className="text-xs text-muted-foreground mt-1">
+                Password must be at least 6 characters with 1 special character
+              </p>
+            </div>
+          </div>
+          <DialogFooter
+            style={{ display: "flex", justifyContent: "space-between" }}
+          >
+            <Button
+              variant="outline"
+              onClick={() => setIsEditDialogOpen(false)}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleSaveChanges}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Saving..." : "Save Changes"}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -26,31 +26,44 @@ export default function ShippingReturns() {
               <div className="border-b border-gray-200 pb-6">
                 <h3 className="font-heading text-forest text-xl font-semibold mb-3">Shipping Methods & Timeframes</h3>
                 <p className="text-olive mb-4">
-                  We offer the following shipping options to ensure your farm-fresh products reach you in perfect condition:
+                  We partner with Indian Post to deliver your farm-fresh products safely and affordably across India:
                 </p>
                 <ul className="space-y-3">
                   <li className="flex">
                     <ArrowRight className="text-primary h-5 w-5 mt-0.5 mr-2 flex-shrink-0" />
                     <div>
-                      <span className="font-medium text-forest">Standard Shipping (3-5 business days):</span>
-                      <p className="text-olive">₹70 or FREE for orders above ₹500</p>
-                    </div>
-                  </li>
-                  <li className="flex">
-                    <ArrowRight className="text-primary h-5 w-5 mt-0.5 mr-2 flex-shrink-0" />
-                    <div>
-                      <span className="font-medium text-forest">Express Shipping (1-2 business days):</span>
-                      <p className="text-olive">₹150 (available for select locations)</p>
-                    </div>
-                  </li>
-                  <li className="flex">
-                    <ArrowRight className="text-primary h-5 w-5 mt-0.5 mr-2 flex-shrink-0" />
-                    <div>
-                      <span className="font-medium text-forest">Same-Day Delivery:</span>
-                      <p className="text-olive">₹250 (available only in select metro areas for orders placed before 11 AM)</p>
+                      <span className="font-medium text-forest">Standard Delivery via Indian Post (5-7 business days):</span>
+                      <p className="text-olive">Reliable nationwide delivery service</p>
                     </div>
                   </li>
                 </ul>
+
+                <div className="mt-6">
+                  <h4 className="font-heading text-forest text-lg font-semibold mb-3">Shipping Charges Based on Weight</h4>
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <div className="grid gap-3">
+                      <div className="flex justify-between items-center py-2 border-b border-gray-200">
+                        <span className="text-forest font-medium">0 - 200 grams</span>
+                        <span className="text-olive">₹50</span>
+                      </div>
+                      <div className="flex justify-between items-center py-2 border-b border-gray-200">
+                        <span className="text-forest font-medium">200 grams - 500 grams</span>
+                        <span className="text-olive">₹70</span>
+                      </div>
+                      <div className="flex justify-between items-center py-2 border-b border-gray-200">
+                        <span className="text-forest font-medium">500 grams - 2 kg</span>
+                        <span className="text-olive">₹100</span>
+                      </div>
+                      <div className="flex justify-between items-center py-2">
+                        <span className="text-forest font-medium">Above 2 kg</span>
+                        <span className="text-olive">₹100 + ₹40 per additional kg</span>
+                      </div>
+                    </div>
+                  </div>
+                  <p className="text-sm text-olive mt-3">
+                    <span className="font-medium text-forest">Note:</span> Shipping charges are calculated automatically based on the total weight of your order during checkout.
+                  </p>
+                </div>
               </div>
 
               <div className="border-b border-gray-200 pb-6">
@@ -127,43 +140,78 @@ export default function ShippingReturns() {
 
             <div className="space-y-6">
               <div className="border-b border-gray-200 pb-6">
-                <h3 className="font-heading text-forest text-xl font-semibold mb-3">30-Day Satisfaction Guarantee</h3>
+                <h3 className="font-heading text-forest text-xl font-semibold mb-3">24-Hour Return Policy</h3>
                 <p className="text-olive">
-                  We stand behind the quality of our products. If you're not completely satisfied with your purchase, we accept returns within 30 days of delivery for a full refund or replacement.
+                  We stand behind the quality of our products. If you're not completely satisfied with your purchase due to damaged or defective items, we accept returns within 24 hours of delivery for a full refund or replacement.
                 </p>
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mt-4">
+                  <p className="text-amber-800 font-medium">
+                    <strong>Important:</strong> Returns are only accepted for damaged or defective products with proper visual documentation within 24 hours of delivery.
+                  </p>
+                </div>
               </div>
 
               <div className="border-b border-gray-200 pb-6">
                 <h3 className="font-heading text-forest text-xl font-semibold mb-3">Return Process</h3>
                 <p className="text-olive mb-4">
-                  To initiate a return, please follow these steps:
+                  To initiate a return for damaged or defective products, please follow these steps:
                 </p>
                 <ol className="list-decimal list-inside space-y-3 text-olive">
-                  <li>Contact our customer service team via email or phone within 30 days of receiving your order</li>
-                  <li>Provide your order number and details about the items you wish to return</li>
-                  <li>Our team will guide you through the process and provide a return shipping label if applicable</li>
-                  <li>Package unused items securely in their original packaging if possible</li>
-                  <li>Ship the items back using the provided return label or your preferred carrier</li>
+                  <li>Contact our customer service team via email or phone within 24 hours of receiving your order</li>
+                  <li>Provide your order number and clear photos/videos showing the damaged or defective items</li>
+                  <li>Our team will review the visual evidence and guide you through the process</li>
+                  <li>If approved, we'll provide a return shipping label or arrange pickup</li>
+                  <li>Package the items securely in their original packaging if possible</li>
                 </ol>
+              </div>
+
+              <div className="border-b border-gray-200 pb-6">
+                <h3 className="font-heading text-forest text-xl font-semibold mb-3">Refund Conditions</h3>
+                <p className="text-olive mb-4">
+                  Refunds are processed under the following conditions:
+                </p>
+                <ul className="space-y-3">
+                  <li className="flex">
+                    <ArrowRight className="text-primary h-5 w-5 mt-0.5 mr-2 flex-shrink-0" />
+                    <div>
+                      <span className="font-medium text-forest">Damaged Products:</span>
+                      <p className="text-olive">Full refund provided only if the product was not collected/accepted by the customer due to visible damage</p>
+                    </div>
+                  </li>
+                  <li className="flex">
+                    <ArrowRight className="text-primary h-5 w-5 mt-0.5 mr-2 flex-shrink-0" />
+                    <div>
+                      <span className="font-medium text-forest">Visual Documentation Required:</span>
+                      <p className="text-olive">Clear photos or videos showing the damage must be provided within 24 hours</p>
+                    </div>
+                  </li>
+                  <li className="flex">
+                    <ArrowRight className="text-primary h-5 w-5 mt-0.5 mr-2 flex-shrink-0" />
+                    <div>
+                      <span className="font-medium text-forest">Collected Products:</span>
+                      <p className="text-olive">Products that have been collected and accepted by the customer are not eligible for refund unless proven defective</p>
+                    </div>
+                  </li>
+                </ul>
               </div>
 
               <div className="border-b border-gray-200 pb-6">
                 <h3 className="font-heading text-forest text-xl font-semibold mb-3">Special Considerations for Perishable Items</h3>
                 <p className="text-olive mb-4">
-                  For perishable products, please contact us within 24 hours of delivery if there are any issues with quality or condition. Because of their nature, we handle these returns on a case-by-case basis:
+                  For perishable products, please contact us immediately upon delivery if there are any issues with quality or condition:
                 </p>
                 <ul className="space-y-3">
                   <li className="flex">
                     <ArrowRight className="text-primary h-5 w-5 mt-0.5 mr-2 flex-shrink-0" />
-                    <p className="text-olive">We may issue a refund or replacement without requiring the return of the product</p>
+                    <p className="text-olive">Report any issues within 24 hours of delivery with photographic evidence</p>
                   </li>
                   <li className="flex">
                     <ArrowRight className="text-primary h-5 w-5 mt-0.5 mr-2 flex-shrink-0" />
-                    <p className="text-olive">Photographic evidence of the issue may be requested</p>
+                    <p className="text-olive">Refunds are only applicable if the product was rejected at the time of delivery</p>
                   </li>
                   <li className="flex">
                     <ArrowRight className="text-primary h-5 w-5 mt-0.5 mr-2 flex-shrink-0" />
-                    <p className="text-olive">Our quality team will review each case promptly to ensure customer satisfaction</p>
+                    <p className="text-olive">Our quality team will review each case based on the provided visual documentation</p>
                   </li>
                 </ul>
               </div>
@@ -176,7 +224,11 @@ export default function ShippingReturns() {
                 <ul className="space-y-3">
                   <li className="flex">
                     <ArrowRight className="text-primary h-5 w-5 mt-0.5 mr-2 flex-shrink-0" />
-                    <p className="text-olive">Products with broken seals or opened packaging (except in cases of damage or defect)</p>
+                    <p className="text-olive">Products that have been collected and accepted by the customer</p>
+                  </li>
+                  <li className="flex">
+                    <ArrowRight className="text-primary h-5 w-5 mt-0.5 mr-2 flex-shrink-0" />
+                    <p className="text-olive">Products with broken seals or opened packaging (unless damaged during transit)</p>
                   </li>
                   <li className="flex">
                     <ArrowRight className="text-primary h-5 w-5 mt-0.5 mr-2 flex-shrink-0" />
@@ -184,7 +236,7 @@ export default function ShippingReturns() {
                   </li>
                   <li className="flex">
                     <ArrowRight className="text-primary h-5 w-5 mt-0.5 mr-2 flex-shrink-0" />
-                    <p className="text-olive">Gift cards and promotional items</p>
+                    <p className="text-olive">Products reported after the 24-hour window</p>
                   </li>
                 </ul>
               </div>
@@ -192,12 +244,12 @@ export default function ShippingReturns() {
               <div>
                 <h3 className="font-heading text-forest text-xl font-semibold mb-3">Refund Process</h3>
                 <p className="text-olive mb-4">
-                  Once we receive and inspect your return, we'll process your refund:
+                  Once we approve your return request based on visual evidence, we'll process your refund:
                 </p>
                 <ul className="space-y-3">
                   <li className="flex">
                     <ArrowRight className="text-primary h-5 w-5 mt-0.5 mr-2 flex-shrink-0" />
-                    <p className="text-olive">Refunds are processed within 5-7 business days after inspection</p>
+                    <p className="text-olive">Refunds are processed within 5-7 business days after approval</p>
                   </li>
                   <li className="flex">
                     <ArrowRight className="text-primary h-5 w-5 mt-0.5 mr-2 flex-shrink-0" />
@@ -207,10 +259,16 @@ export default function ShippingReturns() {
                     <ArrowRight className="text-primary h-5 w-5 mt-0.5 mr-2 flex-shrink-0" />
                     <p className="text-olive">You'll receive an email notification when your refund is processed</p>
                   </li>
+                  <li className="flex">
+                    <ArrowRight className="text-primary h-5 w-5 mt-0.5 mr-2 flex-shrink-0" />
+                    <p className="text-olive">Shipping charges are refunded only for products damaged during transit</p>
+                  </li>
                 </ul>
-                <p className="text-olive mt-4">
-                  <span className="font-medium text-forest">Note:</span> Shipping charges are only refundable if the return is due to our error (damaged, defective, or incorrect items).
-                </p>
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4 mt-4">
+                  <p className="text-red-800">
+                    <strong>Please Note:</strong> Refunds are only applicable for products that were not collected by the customer due to damage or defects. Once a product is accepted and collected, no refunds will be processed unless the product is proven to be defective with proper documentation.
+                  </p>
+                </div>
               </div>
             </div>
           </div>

@@ -8,6 +8,7 @@ import morgan from "morgan";
 import dotenv from "dotenv";
 import { disableExpiredCoupons } from "./jobs/disableExpiredCoupons";
 import { scheduleCouponExpiration } from "./jobs/scheduleCouponExpiration";
+import adminUsersRoutes from "./routes/admin/users";
 dotenv.config();
 const app = express();
 app.use(express.json());
@@ -167,3 +168,6 @@ app.use(morgan("dev"));
     log(`Server running on http://${host}:${port}`);
   });
 })();
+
+// Admin routes
+app.use("/api/admin/users", adminUsersRoutes);

@@ -635,6 +635,168 @@ class EmailService {
       return false;
     }
   }
+
+  async sendAdminEmailUpdateNotification(
+    user: User,
+    oldEmail: string,
+    newEmail: string
+  ): Promise<void> {
+    const siteInfo = await this.getSiteInfo();
+
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Email Updated by Admin</title>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; }
+          .header { background-color: #2d5016; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+          .content { background-color: white; padding: 30px; border-radius: 0 0 8px 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+          .update-info { background-color: #e8f5e8; border: 1px solid #c8e6c8; padding: 20px; border-radius: 6px; margin: 20px 0; }
+          .warning { background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 6px; margin: 20px 0; color: #856404; }
+          .footer { text-align: center; margin-top: 30px; color: #666; font-size: 14px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>📧 Email Address Updated</h1>
+            <p>${siteInfo.siteName} - ${siteInfo.siteTagline}</p>
+          </div>
+          <div class="content">
+            <h2>Hello ${user.name}!</h2>
+            <p>Your email address has been updated by our administrator.</p>
+            
+            <div class="update-info">
+              <h3>📋 Update Details:</h3>
+              <ul>
+                <li><strong>Previous Email:</strong> ${oldEmail}</li>
+                <li><strong>New Email:</strong> ${newEmail}</li>
+                <li><strong>Updated on:</strong> ${new Date().toLocaleString()}</li>
+                <li><strong>Updated by:</strong> Administrator</li>
+              </ul>
+            </div>
+            
+            <div class="warning">
+              <strong>⚠️ Important:</strong>
+              <ul>
+                <li>Please use your new email address (${newEmail}) for future logins</li>
+                <li>All future communications will be sent to your new email address</li>
+                <li>If you didn't request this change, please contact our support team immediately</li>
+              </ul>
+            </div>
+            
+            <p>If you have any questions or concerns about this change, please don't hesitate to contact our support team.</p>
+            
+            <div class="footer">
+              <p>Best regards,<br>The ${siteInfo.siteName} Team</p>
+              <p><small>This is an automated notification. Please do not reply to this message.</small></p>
+            </div>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    // Send to both old and new email addresses
+    await Promise.all([
+      this.transporter.sendMail({
+        from: `"${this.fromName}" <${this.from}>`,
+        to: oldEmail,
+        subject: `📧 Your ${siteInfo.siteName} Email Address Has Been Updated`,
+        html,
+      }),
+      this.transporter.sendMail({
+        from: `"${this.fromName}" <${this.from}>`,
+        to: newEmail,
+        subject: `📧 Your ${siteInfo.siteName} Email Address Has Been Updated`,
+        html,
+      }),
+    ]);
+  }
+
+  async sendAdminPasswordUpdateNotification(
+    user: User,
+    newPassword: string
+  ): Promise<void> {
+    const siteInfo = await this.getSiteInfo();
+
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Password Updated by Admin</title>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; }
+          .header { background-color: #2d5016; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+          .content { background-color: white; padding: 30px; border-radius: 0 0 8px 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+          .password-info { background-color: #e8f5e8; border: 1px solid #c8e6c8; padding: 20px; border-radius: 6px; margin: 20px 0; }
+          .password-box { background-color: #f8f9fa; border: 2px dashed #2d5016; padding: 15px; border-radius: 6px; text-align: center; margin: 10px 0; font-family: monospace; font-size: 18px; font-weight: bold; }
+          .warning { background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 6px; margin: 20px 0; color: #856404; }
+          .login-button { display: inline-block; background-color: #2d5016; color: white; padding: 15px 30px; text-decoration: none; border-radius: 6px; margin: 20px 0; font-weight: bold; }
+          .footer { text-align: center; margin-top: 30px; color: #666; font-size: 14px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>🔐 Password Updated</h1>
+            <p>${siteInfo.siteName} - ${siteInfo.siteTagline}</p>
+          </div>
+          <div class="content">
+            <h2>Hello ${user.name}!</h2>
+            <p>Your account password has been updated by our administrator.</p>
+            
+            <div class="password-info">
+              <h3>🔑 Your New Password Details:</h3>
+              <p><strong>Updated on:</strong> ${new Date().toLocaleString()}</p>
+              <p><strong>Updated by:</strong> Administrator</p>
+              
+              <p><strong>Your new password is:</strong></p>
+              <div class="password-box">${newPassword}</div>
+              
+              <p><small><strong>Security Note:</strong> Please save this password securely and consider changing it after your next login.</small></p>
+            </div>
+            
+            <div style="text-align: center;">
+              <a href="${siteInfo.baseUrl}/login" class="login-button">Login to Your Account</a>
+            </div>
+            
+            <div class="warning">
+              <strong>⚠️ Important Security Information:</strong>
+              <ul>
+                <li>Please log in with your new password as soon as possible</li>
+                <li>We recommend changing this password after logging in</li>
+                <li>If you didn't request this change, please contact our support team immediately</li>
+                <li>Never share your password with anyone</li>
+              </ul>
+            </div>
+            
+            <p>If you have any questions or concerns about this change, please contact our support team.</p>
+            
+            <div class="footer">
+              <p>Best regards,<br>The ${siteInfo.siteName} Team</p>
+              <p><small>This is an automated notification. Please do not reply to this message.</small></p>
+            </div>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    await this.transporter.sendMail({
+      from: `"${this.fromName}" <${this.from}>`,
+      to: user.email,
+      subject: `🔐 Your ${siteInfo.siteName} Password Has Been Updated`,
+      html,
+    });
+  }
 }
 
 // EmailService will be initialized in the main server file with the storage callback
