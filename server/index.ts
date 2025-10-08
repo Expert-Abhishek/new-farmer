@@ -139,8 +139,13 @@ app.use(morgan("dev"));
     );
   }
 
+  // Register API routes FIRST - this is crucial
   const server = await registerRoutes(app);
+  
+  // Admin routes should be registered before static serving
+  app.use("/api/admin/users", adminUsersRoutes);
 
+  // Error handling middleware
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
@@ -149,9 +154,7 @@ app.use(morgan("dev"));
     throw err;
   });
 
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
+  // Static file serving should come AFTER all API routes
   if (app.get("env") === "development") {
     await setupVite(app, server);
   } else {
@@ -160,14 +163,13 @@ app.use(morgan("dev"));
 
   // Run every day at 12:00 AM
   scheduleCouponExpiration();
-  // Configure port for Replit environment
+  
+  // Configure port for production environment
   const port = parseInt(process.env.PORT || "5000", 10);
-  const host = "0.0.0.0"; // Important for Replit
+  const host = "0.0.0.0";
 
   server.listen(port, host, () => {
     log(`Server running on http://${host}:${port}`);
+    log(`API endpoints available at http://${host}:${port}/api/`);
   });
 })();
-
-// Admin routes new
-app.use("/api/admin/users", adminUsersRoutes);

@@ -57,7 +57,7 @@ export function SiteProvider({ children }: { children: ReactNode }) {
       }
       return acc;
     }, {});
-
+console.log('>>>>>>>> settingsMap', rawSettings);
     return {
       siteName: settingsMap.site_name || 'HarvestDirect',
       siteTagline: settingsMap.site_tagline || 'Fresh from Farm to Your Table',
