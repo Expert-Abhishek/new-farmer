@@ -169,5 +169,5 @@ app.use(morgan("dev"));
   });
 })();
 
-// Admin routes
+// Admin routes new
 app.use("/api/admin/users", adminUsersRoutes);
