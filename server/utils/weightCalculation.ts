@@ -29,19 +29,17 @@ export function convertToKilograms(weight: number, unit: string): number {
 export function calculateShippingCost(weightInKg: number): number {
   if (weightInKg <= 0) return 0;
   
-  if (weightInKg < 0.5) {
-    return 45; // Less than 0.5kg = ₹45
-  } else if (weightInKg >= 0.5 && weightInKg <= 1.0) {
-    return 82; // 0.5kg to 1kg = ₹82
-  } else if (weightInKg > 1.0 && weightInKg <= 1.5) {
-    return 100; // 1kg to 1.5kg = ₹100
-  } else if (weightInKg > 1.5 && weightInKg <= 2.0) {
-    return 120; // 1.5kg to 2kg = ₹120
+  if (weightInKg <= 0.2) {
+    return 50; // 0 to 200gm = ₹50
+  } else if (weightInKg > 0.2 && weightInKg <= 0.5) {
+    return 70; // 200gm to 500gm = ₹70
+  } else if (weightInKg > 0.5 && weightInKg <= 2.0) {
+    return 100; // 500gm to 2kg = ₹100
   } else {
-    // Above 2kg: ₹120 + ₹82 per additional kg
+    // Above 2kg: ₹100 + ₹40 per additional kg
     const additionalWeight = weightInKg - 2.0;
-    const additionalCost = Math.ceil(additionalWeight) * 82;
-    return 120 + additionalCost;
+    const additionalCost = Math.ceil(additionalWeight) * 40;
+    return 100 + additionalCost;
   }
 }
 

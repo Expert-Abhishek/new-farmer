@@ -23,10 +23,10 @@ export async function calculateCartTotalWeight(cartId: number): Promise<number> 
 
     // Calculate total weight by converting each item to kg
     let totalWeightKg = 0;
+   
     for (const item of items) {
       const weightInKg = convertToKilograms(item.weight || 0, item.unit || 'kg');
       totalWeightKg += item.quantity * weightInKg;
-      console.log(`Item: ${item.quantity} x ${item.weight}${item.unit} = ${item.quantity * weightInKg}kg`);
     }
 
     console.log(`Cart ${cartId} total weight calculation: ${totalWeightKg}kg`);
