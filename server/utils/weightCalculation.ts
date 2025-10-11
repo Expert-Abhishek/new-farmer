@@ -9,6 +9,7 @@ import { orders, orderItems, productVariants } from "../../shared/schema.ts";
  * @returns Weight in kilograms
  */
 export function convertToKilograms(weight: number, unit: string): number {
+  console.log('>>>>>>>check',unit,weight);
   switch (unit.toLowerCase()) {
     case 'g': // grams to kg
       return weight / 1000;
@@ -28,17 +29,17 @@ export function convertToKilograms(weight: number, unit: string): number {
  */
 export function calculateShippingCost(weightInKg: number): number {
   if (weightInKg <= 0) return 0;
-  
+
   if (weightInKg <= 0.2) {
-    return 50; // 0 to 200gm = ₹50
-  } else if (weightInKg > 0.2 && weightInKg <= 0.5) {
-    return 70; // 200gm to 500gm = ₹70
-  } else if (weightInKg > 0.5 && weightInKg <= 2.0) {
-    return 100; // 500gm to 2kg = ₹100
+    return 50; // 0 to 200g
+  } else if (weightInKg <= 0.5) {
+    return 70; // 200g to 500g
+  } else if (weightInKg <= 2.0) {
+    return 100; // 500g to 2kg
   } else {
-    // Above 2kg: ₹100 + ₹40 per additional kg
-    const additionalWeight = weightInKg - 2.0;
-    const additionalCost = Math.ceil(additionalWeight) * 40;
+    // Above 2kg: ₹100 + ₹40 per full additional kg
+    const additionalKgs = Math.floor(weightInKg - 2); // ignore grams
+    const additionalCost = additionalKgs * 40;
     return 100 + additionalCost;
   }
 }
