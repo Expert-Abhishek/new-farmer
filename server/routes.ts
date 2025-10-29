@@ -519,24 +519,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post(`${apiPrefix}/products/:id/reviews`, async (req, res) => {
+  app.post(`${apiPrefix}/products/:id/reviews`, authenticate, async (req, res) => {
     try {
+      const user = (req as any).user;
       const productId = parseInt(req.params.id);
       if (isNaN(productId)) {
         return res.status(400).json({ message: "Invalid product ID" });
       }
 
-      const reviewData = {
-        ...req.body,
-        productId,
+      const { rating, comment, orderId, variantId } = req.body as {
+        rating?: number;
+        comment?: string;
+        orderId?: number;
+        variantId?: number;
       };
 
-      console.log('Review submission request:', reviewData);
-      const newReview = await storage.addProductReview(reviewData);
+      // Basic validation
+      if (typeof rating !== "number" || isNaN(rating) || rating <= 0) {
+        return res.status(400).json({ message: "Rating is required and must be a number" });
+      }
+
+      // Require orderId for review submissions from order history (ensures review is tied to a purchase)
+      if (!orderId || typeof orderId !== "number") {
+        return res.status(400).json({ message: "orderId is required for submitting a review" });
+      }
+
+      // Verify order exists, belongs to user and is delivered
+      const [order] = await db.select().from(orders).where(eq(orders.id, orderId)).limit(1);
+      if (!order) {
+        return res.status(404).json({ message: "Order not found" });
+      }
+
+      // If the order has a userId, it must match the authenticated user
+      if (order.userId && order.userId !== user.id) {
+        return res.status(403).json({ message: "You are not authorized to review products from this order" });
+      }
+
+      if ((order.status || "").toLowerCase() !== "delivered") {
+        return res.status(400).json({ message: "Only delivered orders can be reviewed" });
+      }
+
+      // Ensure the order contains the product (and variant if provided)
+      const orderItemsList = await db.select().from(orderItems).where(eq(orderItems.orderId, orderId));
+      const matchingItem = orderItemsList.find((it: any) => it.productId === productId && (variantId ? it.variantId === variantId : true));
+      if (!matchingItem) {
+        return res.status(400).json({ message: "This product/variant was not part of the specified order" });
+      }
+
+      const insertData = {
+        productId,
+        userId: user.id,
+        orderId,
+        customerName: user.name || user.email || "",
+        rating: Number(rating),
+        reviewText: (comment || "").toString(),
+        variantId: variantId ?? null,
+      };
+
+      console.log("Review submission request (validated):", { userId: user.id, productId, orderId, variantId, rating });
+
+      const newReview = await storage.addProductReview(insertData as any);
       res.status(201).json(newReview);
-    } catch (error) {
-      console.error('Error adding product review:', error);
-      res.status(500).json({ message: "Failed to add product review", error: error.message });
+    } catch (error: any) {
+      console.error("Error adding product review:", error);
+      res.status(500).json({ message: "Failed to add product review", error: error?.message || String(error) });
     }
   });
 
@@ -2098,7 +2144,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
               const canRate = await storage.canUserReviewProduct(
                 user.id,
                 item.productId,
-                item.variantId // pass variant if needed
+                item.variantId, // pass variant if needed
+                order.id // ensure per-order check
               );
               return {
                 ...item,
@@ -2126,7 +2173,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       try {
         const user = (req as any).user;
         const { orderId } = req.params;
-        const { productId, rating, reviewText } = req.body;
+  const { productId, rating, reviewText, variantId } = req.body;
 
         // Validate input
         if (!productId || !rating || rating < 1 || rating > 5) {
@@ -2149,7 +2196,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
 
         // Check if user can rate this product (hasn't rated it before)
-        const canRate = await storage.canUserReviewProduct(user.id, productId);
+        const canRate = await storage.canUserReviewProduct(user.id, productId, variantId);
         if (!canRate) {
           return res
             .status(400)
@@ -2164,6 +2211,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           customerName: user.name,
           rating,
           reviewText: reviewText || "",
+          variantId: variantId ?? null,
           verified: true, // Mark as verified since it's from a delivered order
         });
 
@@ -2215,53 +2263,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   );
 
-  // Product Review System for Delivered Orders
-  // Get product reviews
-  app.get(`${apiPrefix}/products/:id/reviews`, async (req, res) => {
-    try {
-      const productId = parseInt(req.params.id);
-      const reviews = await storage.getProductReviews(productId);
-      res.json(reviews);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to fetch product reviews" });
-    }
-  });
-
-  // Check if user can review a product (has purchased and received it)
-  app.get(
-    `${apiPrefix}/products/:id/can-review`,
-    authenticate,
-    async (req, res) => {
-      try {
-        const productId = parseInt(req.params.id);
-        const userId = (req as any).user.id;
-
-        const canReview = await storage.canUserReviewProduct(userId, productId);
-        res.json(canReview);
-      } catch (error) {
-        res.status(500).json({ message: "Failed to check review eligibility" });
-      }
-    }
-  );
-
-  // Add product review
-  app.post(`${apiPrefix}/products/:id/reviews`, async (req, res) => {
-    try {
-      const productId = parseInt(req.params.id);
-      const reviewData = req.body;
-
-      // Validate the review data
-      const validatedData = insertProductReviewSchema.parse({
-        ...reviewData,
-        productId,
-      });
-
-      const newReview = await storage.addProductReview(validatedData);
-      res.status(201).json(newReview);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to add product review" });
-    }
-  });
+  
 
   // Contact Form Handling
   // Submit contact form

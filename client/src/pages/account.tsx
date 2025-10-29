@@ -75,11 +75,13 @@ export default function Account() {
     orderId: number;
     productId: number;
     productName: string;
+    variantId?: number | null;
   }>({
     isOpen: false,
     orderId: 0,
     productId: 0,
     productName: "",
+    variantId: null,
   });
 
   // Password change state
@@ -933,6 +935,7 @@ export default function Account() {
                                               productId: item.productId,
                                               productName:
                                                 item.productName || "Product",
+                                              variantId: item.variant?.id ?? null,
                                             })
                                           }
                                         >
@@ -971,11 +974,13 @@ export default function Account() {
                 orderId: 0,
                 productId: 0,
                 productName: "",
+                variantId: null,
               })
             }
             orderId={ratingModal.orderId}
             productId={ratingModal.productId}
             productName={ratingModal.productName}
+            variantId={ratingModal.variantId}
           />
         </div>
       </div>

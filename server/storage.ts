@@ -127,7 +127,7 @@ export interface IStorage {
   // Product Reviews
   getProductReviews(productId: number): Promise<ProductReview[]>;
   addProductReview(review: InsertProductReview): Promise<ProductReview>;
-  canUserReviewProduct(userId: number, productId: number): Promise<boolean>;
+  canUserReviewProduct(userId: number, productId: number, variantId?: number | null, orderId?: number | null): Promise<boolean>;
   getUserProductReviews(userId: number): Promise<ProductReview[]>;
 
   // Contact Messages
@@ -644,24 +644,28 @@ export class MemStorage implements IStorage {
 
   async canUserReviewProduct(
     userId: number,
-    productId: number
+    productId: number,
+    variantId?: number | null,
+    orderId?: number | null
   ): Promise<boolean> {
-    // Check if user has already reviewed this product
-    const hasReviewed = Array.from(this.productReviews.values()).some(
-      (review) => review.userId === userId && review.productId === productId
-    );
+    // Check if there is already a review for the same user/product/order/variant
+    const hasReviewed = Array.from(this.productReviews.values()).some((review) => {
+      if (review.userId !== userId) return false;
+      if (review.productId !== productId) return false;
+      if (orderId && review.orderId !== orderId) return false;
+      if (typeof variantId !== "undefined" && variantId !== null) {
+        return review.variantId === variantId;
+      }
+      return true;
+    });
 
-    if (hasReviewed) {
-      return false; // User has already reviewed this product
-    }
+    if (hasReviewed) return false;
 
-    // In a real app, we would check if the user has purchased this product
-    // and if the order status is "delivered" - here we'll simulate this logic
+    // Simulate purchase/delivery check using payments in memory for demo
     const userOrders = Array.from(this.payments.values()).filter(
       (payment) => payment.userId === userId && payment.status === "completed"
     );
 
-    // For demo purposes, if the user has any completed payment, they can review any product
     return userOrders.length > 0;
   }
 
@@ -1118,11 +1122,27 @@ export class DatabaseStorage implements IStorage {
   async canUserReviewProduct(
     userId: number,
     productId: number,
-    variantId?: number
+    variantId?: number | null,
+    orderId?: number | null
   ): Promise<boolean> {
-    // Allow all logged-in users to review products multiple times
-    // This enables users to update their reviews or add new ones
-    return userId > 0; // Simple check to ensure user is logged in
+    // A user can review a product for a specific order only once.
+    // Check if a review already exists for this (user, product, order, variant) tuple.
+    const whereClauses: any[] = [
+      eq(productReviews.userId, userId),
+      eq(productReviews.productId, productId),
+    ];
+
+    if (orderId) {
+      whereClauses.push(eq(productReviews.orderId, orderId));
+    }
+
+    if (typeof variantId !== "undefined" && variantId !== null) {
+      whereClauses.push(eq(productReviews.variantId, variantId));
+    }
+
+    const existing = await db.select().from(productReviews).where(...whereClauses).limit(1);
+    // If any matching review is found, user cannot review again for that order/item
+    return existing.length === 0;
   }
 
   async getUserProductReviews(userId: number): Promise<ProductReview[]> {

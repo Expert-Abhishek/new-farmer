@@ -20,6 +20,7 @@ interface ProductRatingModalProps {
   orderId: number;
   productId: number;
   productName: string;
+  variantId?: number | null;
 }
 
 export default function ProductRatingModal({
@@ -43,6 +44,7 @@ export default function ProductRatingModal({
           productId,
           rating: data.rating,
           reviewText: data.reviewText,
+          variantId: (typeof variantId !== 'undefined') ? variantId : undefined,
         }),
       });
     },

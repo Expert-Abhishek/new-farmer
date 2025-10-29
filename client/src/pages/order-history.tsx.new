@@ -1,0 +1,111 @@
+// Previous imports remain the same...
+
+export default function OrderHistory() {
+  // Previous state and hooks remain the same...
+
+  if (!isAuthenticated) {
+    return (
+      <div className="container mx-auto py-10 text-center relative top-[10rem] mb-[15rem]">
+        <h1 className="text-2xl font-bold mb-4">Please Log In</h1>
+        <p className="text-gray-600 mb-6">
+          You need to be logged in to view your order history.
+        </p>
+        <Link href="/login">
+          <Button>Go to Login</Button>
+        </Link>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    // Loading state remains the same...
+  }
+
+  if (error) {
+    // Error state remains the same...
+  }
+
+  const orders = orderHistory?.orders || [];
+
+  return (
+    <>
+      <div className="flex justify-center">
+        <div className="container p-16 relative top-16 mb-8">
+          {/* Previous order history content remains the same... */}
+        </div>
+      </div>
+
+      {/* Review Modal - Now at root level */}
+      <Dialog open={isReviewModalOpen} onOpenChange={setIsReviewModalOpen}>
+        <DialogContent className="bg-white max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              Review {selectedReviewProduct?.productName}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Rating</Label>
+              <div className="mt-2 flex justify-center">
+                <ReactStars
+                  count={5}
+                  onChange={setRating}
+                  size={24}
+                  value={rating}
+                  activeColor="#ffd700"
+                />
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="review-comment">Comment (Optional)</Label>
+              <Textarea
+                id="review-comment"
+                placeholder="Share your experience with this product..."
+                value={reviewComment}
+                onChange={(e) => setReviewComment(e.target.value)}
+                className="mt-2"
+                rows={4}
+              />
+            </div>
+            <div className="flex justify-between gap-2 pt-2">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsReviewModalOpen(false);
+                  setSelectedReviewProduct(null);
+                  setRating(0);
+                  setReviewComment("");
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  if (!rating) {
+                    toast({
+                      title: "Rating Required",
+                      description: "Please provide a rating before submitting",
+                      variant: "destructive",
+                    });
+                    return;
+                  }
+                  if (selectedReviewProduct) {
+                    submitReviewMutation.mutate({
+                      orderId: selectedReviewProduct.orderId,
+                      productId: selectedReviewProduct.productId,
+                      rating,
+                      comment: reviewComment.trim() || undefined,
+                    });
+                  }
+                }}
+                disabled={!rating || submitReviewMutation.isPending}
+              >
+                {submitReviewMutation.isPending ? "Submitting..." : "Submit Review"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}

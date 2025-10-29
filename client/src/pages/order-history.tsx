@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import ReactStars from "react-rating-stars-component";
 import {
   Card,
   CardContent,
@@ -86,6 +87,13 @@ interface CustomerInfo {
   firstName: string;
 }
 
+interface Review {
+  orderId: number;
+  productId: number;
+  rating: number;
+  comment?: string;
+}
+
 interface Order {
   id: number;
   userId: number;
@@ -116,12 +124,23 @@ interface OrderHistoryResponse {
 }
 
 export default function OrderHistory() {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user ,token} = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
   const [cancellationReason, setCancellationReason] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  // Review states
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [selectedReviewProduct, setSelectedReviewProduct] = useState<{
+    orderId: number;
+    productId: number;
+    productName: string;
+    variantId?: number | null;
+  } | null>(null);
+  const [rating, setRating] = useState<number>(0);
+  const [reviewComment, setReviewComment] = useState("");
 
   const {
     data: orderHistory,
@@ -199,6 +218,45 @@ export default function OrderHistory() {
   };
 
   // Mutation for cancelling order
+  const submitReviewMutation = useMutation({
+    mutationFn: async (review: Review) => {
+      // Send review to product-specific endpoint (server validates order ownership & delivery)
+      const url = `/api/products/${review.productId}/reviews`;
+      return apiRequest(url, {
+        method: "POST",
+         headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          rating: review.rating,
+          comment: review.comment,
+          orderId: review.orderId,
+          variantId: (selectedReviewProduct && selectedReviewProduct.variantId) || undefined,
+        }),
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Review Submitted",
+        description: "Thank you for your feedback!",
+      });
+      setIsReviewModalOpen(false);
+      setSelectedReviewProduct(null);
+      setRating(0);
+      setReviewComment("");
+      // Invalidate relevant queries
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to submit review",
+        variant: "destructive",
+      });
+    },
+  });
+
   const cancelOrderMutation = useMutation({
     mutationFn: async ({
       orderId,
@@ -313,8 +371,10 @@ export default function OrderHistory() {
   const orders = orderHistory?.orders || [];
   console.log("Orders:", orders);
   return (
-    <div className="flex justify-center">
-      <div className="container p-16 relative top-16 mb-8">
+    <>
+    <div className="relative">
+      <div className="flex justify-center">
+        <div className="container p-16 relative top-16 mb-8">
         <div className="flex flex-col  gap-4 mb-8">
           <Link href="/account">
             <Button variant="outline" size="sm">
@@ -614,13 +674,37 @@ export default function OrderHistory() {
                                 <div className="font-semibold">
                                   ₹{(item.price * item.quantity).toFixed(2)}
                                 </div>
+                                  {/* Review Button - Only show for delivered orders */}
+                              {order.status.toLowerCase() === "delivered" && (
+                                <Button
+                                className="mt-2"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => {
+                                    console.log("Submitting review for product:", item,"order:", order);
+                                    setSelectedReviewProduct({
+                                      orderId: order.id,
+                                      productId: item.product?.id || 0 ,
+                                      productName: item.product?.name || `Product ${item.productId}`,
+                                      variantId: item.variant?.id ?? null,
+                                    });
+                                    setIsReviewModalOpen(true);
+                                  }}
+                                >
+                                  Review Product
+                                </Button>
+                              )}
                               </div>
+                              
+                            
                             </div>
                           ))}
                         </div>
                       </div>
                     </>
                   )}
+                  
+                  
 
                   {order.deliveredAt && (
                     <div className="mt-4 p-3 bg-green-50 rounded-lg">
@@ -669,6 +753,82 @@ export default function OrderHistory() {
           </div>
         )}
       </div>
-    </div>
+        </div>
+      </div>
+
+      {/* Review Modal */}
+      <Dialog open={isReviewModalOpen} onOpenChange={setIsReviewModalOpen}>
+        <DialogContent className="bg-white max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              Review {selectedReviewProduct?.productName}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Rating</Label>
+              <div className="mt-2 flex justify-center">
+                <ReactStars
+                  count={5}
+                  onChange={setRating}
+                  size={24}
+                  value={rating}
+                  activeColor="#ffd700"
+                />
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="review-comment">Comment (Optional)</Label>
+              <Textarea
+                id="review-comment"
+                placeholder="Share your experience with this product..."
+                value={reviewComment}
+                onChange={(e) => setReviewComment(e.target.value)}
+                className="mt-2"
+                rows={4}
+              />
+            </div>
+            <div className="flex justify-between gap-2 pt-2">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsReviewModalOpen(false);
+                  setSelectedReviewProduct(null);
+                  setRating(0);
+                  setReviewComment("");
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  if (!rating) {
+                    toast({
+                      title: "Rating Required",
+                      description: "Please provide a rating before submitting",
+                      variant: "destructive",
+                    });
+                    return;
+                  }
+                  if (selectedReviewProduct) {
+                    console.log("Submitting review=============:", selectedReviewProduct)
+                    submitReviewMutation.mutate({
+                      orderId: selectedReviewProduct.orderId,
+                      productId: selectedReviewProduct.productId,
+                      rating,
+                      comment: reviewComment.trim() || undefined,
+                    });
+                  }
+                }}
+                disabled={!rating || submitReviewMutation.isPending}
+              >
+                {submitReviewMutation.isPending ? "Submitting..." : "Submit Review"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+      </>
+    
   );
 }
