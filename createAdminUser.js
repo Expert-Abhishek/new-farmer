@@ -1,11 +1,7 @@
-// Script to create an admin user
-import { Pool, neonConfig } from '@neondatabase/serverless';
-import { drizzle } from 'drizzle-orm/neon-serverless';
-import { eq } from 'drizzle-orm';
-import ws from 'ws';
-
-// Configure neon for WebSocket support
-neonConfig.webSocketConstructor = ws;
+// Script to create an admin user using native Postgres
+import { Pool } from 'pg';
+import dotenv from 'dotenv';
+dotenv.config();
 
 // Admin user details
 const adminUser = {

@@ -120,8 +120,7 @@ app.use(morgan("dev"));
   if (dbConnected) {
     // Only initialize database with seed data in development mode
     // Skip seed data in production to preserve real user data
-    const isProduction = process.env.DATABASE_URL?.includes('neon.tech') || 
-                        process.env.NODE_ENV === 'production';
+    const isProduction = process.env.NODE_ENV === 'production';
     
     if (!isProduction && process.env.NODE_ENV === 'development') {
       try {

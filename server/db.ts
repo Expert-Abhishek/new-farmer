@@ -1,12 +1,9 @@
-import { Pool, neonConfig } from "@neondatabase/serverless";
-import { drizzle } from "drizzle-orm/neon-serverless";
+import { Pool } from "pg";
+import { drizzle } from "drizzle-orm/node-postgres";
 import { sql } from "drizzle-orm";
-import ws from "ws";
 import * as schema from "@shared/schema";
 import dotenv from "dotenv";
 dotenv.config();
-// Configure neon for WebSocket support
-neonConfig.webSocketConstructor = ws;
 
 if (!process.env.DATABASE_URL) {
   throw new Error(
@@ -14,7 +11,7 @@ if (!process.env.DATABASE_URL) {
   );
 }
 
-// Create database connection pool
+// Create database connection pool (native Postgres)
 export const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   max: 5,
@@ -22,7 +19,7 @@ export const pool = new Pool({
 });
 
 // Create drizzle instance with schema
-export const db = drizzle({ client: pool, schema });
+export const db = drizzle(pool, { schema });
 
 // Test database connection with retry logic
 export async function testDatabaseConnection(retries = 2): Promise<boolean> {
