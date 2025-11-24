@@ -27,6 +27,7 @@ import { useAnimations } from "@/hooks/use-animations";
 import { ChevronDown, Leaf, Truck, Sprout, MapPin, Loader } from "lucide-react";
 import { motion } from "framer-motion";
 import bannerVideo from "../../../attached_assets/banner.mp4";
+import homeVideo from "../../../attached_assets/home.mp4";
 import type {
   Product,
   Farmer,
@@ -209,14 +210,14 @@ export default function Home() {
       {/* Modern Hero Section */}
       <section className="relative h-screen flex items-center overflow-hidden pt-0 sm:pt-0 md:pt-0 lg:pt-0 xl:pt-0 pt-[100px]">
         {/* Background image with parallax effect */}
-        <div
-          className="absolute inset-0 bg-center bg-cover z-0 transform scale-110"
-          style={{
-            backgroundImage:
-              "url('https://images.unsplash.com/photo-1500076656116-558758c991c1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&h=1080')",
-            filter: "brightness(0.8)",
-          }}
-        ></div>
+         <video
+    className="absolute inset-0 w-full h-full object-cover z-0"
+    src={homeVideo}   // place home.mp4 in public/home.mp4
+    autoPlay
+    loop
+    muted
+    playsInline
+  />
 
         {/* Decorative overlay elements with improved contrast */}
         <div className="absolute inset-0 bg-gradient-to-r from-forest/80 to-black/50 z-10"></div>
