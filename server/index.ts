@@ -50,7 +50,8 @@ const allowedOrigins = [
   "https://new-farmer-e5cl.onrender.com",
   "https://www.freshlyrooted.in",
   "http://193.203.161.214",
-  "https://freshlyrooted.in"
+  "https://freshlyrooted.in",
+  "http://72.61.170.65"
 ];
 
 // Add Replit domain patterns
