@@ -474,15 +474,7 @@ export default function Footer() {
           <p className="text-white/70 text-sm mb-2">
             Made with ❤️ for farmers and natural food.
           </p>
-          <p className="text-white/60 text-xs flex items-center justify-center gap-1">
-            Designed by
-            <a
-              className="flex items-center"
-              href="https://www.techizebuilder.com/project-category/business"
-            >
-              <span className="font-medium">Techize Builder</span>
-            </a>
-          </p>
+         
         </div>
       </div>
     </footer>

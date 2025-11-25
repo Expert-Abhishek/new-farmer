@@ -210,14 +210,14 @@ export default function Home() {
       {/* Modern Hero Section */}
       <section className="relative h-screen flex items-center overflow-hidden pt-0 sm:pt-0 md:pt-0 lg:pt-0 xl:pt-0 pt-[100px]">
         {/* Background image with parallax effect */}
-         <video
-    className="absolute inset-0 w-full h-full object-cover z-0"
-    src={homeVideo}   // place home.mp4 in public/home.mp4
-    autoPlay
-    loop
-    muted
-    playsInline
-  />
+        <video
+          className="absolute inset-0 w-full h-full object-cover z-0"
+          src={homeVideo} // place home.mp4 in public/home.mp4
+          autoPlay
+          loop
+          muted
+          playsInline
+        />
 
         {/* Decorative overlay elements with improved contrast */}
         <div className="absolute inset-0 bg-gradient-to-r from-forest/80 to-black/50 z-10"></div>
@@ -233,8 +233,12 @@ export default function Home() {
               transition={{ duration: 0.8 }}
             >
               <h1 className="font-heading text-white text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-4 leading-tight text-shadow-extra-strong">
-                From <span className="text-secondary font-extrabold">Soil</span>{" "}
-                to <span className="text-secondary font-extrabold">Soul</span>
+                From{" "}
+                <span className="text-secondary font-extrabold">Farm Land</span>{" "}
+                to{" "}
+                <span className="text-secondary font-extrabold">
+                  Your Doorstep
+                </span>
               </h1>
 
               <h2 className="font-heading text-white text-xl sm:text-2xl md:text-3xl lg:text-4xl font-semibold mb-6 text-shadow-extra-strong">
@@ -243,8 +247,8 @@ export default function Home() {
 
               <p className="text-white text-base sm:text-lg max-w-xl mb-8 text-shadow-extra-strong">
                 Experience the authentic flavors of traditionally grown,
-                preservatives-free products sourced directly from the farmers who
-                nurture them with generations of wisdom.
+                preservatives-free products sourced directly from the farmers
+                who nurture them with generations of wisdom.
               </p>
 
               <div className="flex flex-wrap gap-4">
@@ -404,7 +408,7 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center ">
             <div className="order-2 md:order-1 scroll-animation">
               <h3 className="font-heading text-forest text-xl sm:text-2xl md:text-3xl font-semibold mb-4">
-                From Soil to Soul
+                From Farm Land to Your Doorstep
               </h3>
               <p className="text-olive mb-4">
                 Every product in our collection has a story. It begins in the
