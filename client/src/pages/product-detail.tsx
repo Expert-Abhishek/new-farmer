@@ -29,10 +29,10 @@ export default function ProductDetail() {
 
   // Set up scroll animations
   useEffect(() => {
-    if (!isAuthenticated && location !== "/login") {
-      console.log("Redirecting to login...");
-      setTimeout(() => navigate("/login"), 0);
-    }
+    // if (!isAuthenticated && location !== "/login") {
+    //   console.log("Redirecting to login...");
+    //   setTimeout(() => navigate("/login"), 0);
+    // }
     window.scrollTo(0, 0);
     setupScrollAnimation();
   }, [setupScrollAnimation]);
