@@ -39,11 +39,11 @@ export function AddToCartButton({
   const maxQuantity = max !== undefined ? max : 100;
 
   const handleAddToCart = async () => {
-    if (!isAuthenticated && location !== "/login") {
-      console.log("Redirecting to login...");
-      setTimeout(() => navigate("/login"), 0);
-      return;
-    }
+    // if (!isAuthenticated && location !== "/login") {
+    //   console.log("Redirecting to login...");
+    //   setTimeout(() => navigate("/login"), 0);
+    //   return;
+    // }
     setIsAdding(true);
     try {
       if (selectedVariantId === undefined) {

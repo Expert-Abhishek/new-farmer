@@ -219,16 +219,22 @@ export default function Checkout() {
     }
   }, [isAuthenticated, user, form]);
 
-  useEffect(() => {
-    window.scrollTo(0, 0);
-    if (!isAuthenticated && location !== "/login") {
-      console.log("Redirecting to login...");
-      setTimeout(() => navigate("/login"), 0);
-    }
-  }, [isAuthenticated]);
+  // useEffect(() => {
+  //   window.scrollTo(0, 0);
+  //   if (!isAuthenticated && location !== "/login") {
+  //     console.log("Redirecting to login...");
+  //     setTimeout(() => navigate("/login"), 0);
+  //   }
+  // }, [isAuthenticated]);
   // If cart is empty, redirect to products page
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
+ if (!isAuthenticated) {
+    console.log("Redirecting...");
+    navigate("/login");
+    return; // Validation passed, but we stop here because no auth
+  }
+      
     setIsSubmitting(true);
 
     try {
@@ -436,7 +442,21 @@ export default function Checkout() {
           <div className="lg:col-span-2">
             <Form {...form}>
               <form
-                onSubmit={form.handleSubmit(onSubmit)}
+    //             onSubmit={(e)=>{
+    //               e.preventDefault();
+    //               console.log('default')
+    //                if (!isAuthenticated && location !== "/login") {
+    //   console.log("Redirecting to login...");
+    //   setTimeout(() => navigate("/login"), 0);
+    //   return;
+    // }else{
+    // console.log('else ')
+    //   form.handleSubmit(onSubmit)
+    // }
+    //             }
+                  
+    //             }
+                              onSubmit={ form.handleSubmit(onSubmit) }
                 className="space-y-8"
               >
                 {/* Personal Information */}
