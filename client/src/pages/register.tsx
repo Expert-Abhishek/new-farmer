@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useLocation } from "wouter";
+import { useLocation,  Link } from "wouter";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -310,9 +310,12 @@ export default function Register() {
                       <div className="space-y-1 leading-none">
                         <FormLabel>
                           I agree to the{" "}
+                          <Link href="/privacy-policy">
+                          
                           <span className="underline cursor-pointer">
                             Terms and Conditions
                           </span>
+                          </Link>
                         </FormLabel>
                         <FormMessage />
                       </div>
