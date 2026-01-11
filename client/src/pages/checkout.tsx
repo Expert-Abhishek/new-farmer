@@ -219,13 +219,13 @@ export default function Checkout() {
     }
   }, [isAuthenticated, user, form]);
 
-  // useEffect(() => {
-  //   window.scrollTo(0, 0);
-  //   if (!isAuthenticated && location !== "/login") {
-  //     console.log("Redirecting to login...");
-  //     setTimeout(() => navigate("/login"), 0);
-  //   }
-  // }, [isAuthenticated]);
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    // if (!isAuthenticated && location !== "/login") {
+    //   console.log("Redirecting to login...");
+    //   setTimeout(() => navigate("/login"), 0);
+    // }
+  }, [isAuthenticated]);
   // If cart is empty, redirect to products page
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
@@ -423,7 +423,7 @@ export default function Checkout() {
   return (
     <div className="bg-background py-32">
       <div className="container mx-auto px-4">
-        <Link href="/prooducts">
+        <Link href="/products?page=1&sortBy=id&sortOrder=desc">
           <Button
             variant="ghost"
             className="mb-8 flex items-center text-muted-foreground"

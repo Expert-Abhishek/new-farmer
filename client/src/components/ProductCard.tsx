@@ -46,7 +46,7 @@ export default function ProductCard({ product }: ProductCardProps) {
   const averageRating =
     reviews.length > 0
       ? reviews.reduce((sum: number, review: any) => sum + review.rating, 0) /
-        reviews.length
+      reviews.length
       : 0;
   const badges = [
     {
@@ -108,12 +108,12 @@ export default function ProductCard({ product }: ProductCardProps) {
               <Badge variant="info">{product.subcategory}</Badge>
             )}
           </div>
-
-          {/* ⭐ Product Name */}
-          <h3 className="text-base sm:text-lg font-semibold text-gray-800 truncate">
-            {product.name}
-          </h3>
-
+          <Link href={`/products/${product.id}`} className="block">
+            {/* ⭐ Product Name */}
+            <h3 className="text-base sm:text-lg font-semibold text-gray-800 truncate">
+              {product.name}
+            </h3>
+          </Link>
           {/* ⭐ Short Description */}
           {product.shortDescription && (
             <p className="text-xs sm:text-sm text-gray-600 mt-1 line-clamp-2">
@@ -143,11 +143,10 @@ export default function ProductCard({ product }: ProductCardProps) {
                 <button
                   key={variant.id}
                   onClick={() => setSelectedVariant(variant)}
-                  className={`px-2 py-1 border rounded text-sm ${
-                    selectedVariant?.id === variant.id
-                      ? "bg-green-600 text-white border-green-700"
-                      : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
-                  }`}
+                  className={`px-2 py-1 border rounded text-sm ${selectedVariant?.id === variant.id
+                    ? "bg-green-600 text-white border-green-700"
+                    : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
+                    }`}
                 >
                   {variant.quantity} {variant.unit}
                 </button>
