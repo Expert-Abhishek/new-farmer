@@ -1,0 +1,803 @@
+import nodemailer from "nodemailer";
+import { Order, OrderItem, User, SiteSetting } from "../shared/schema";
+
+interface EmailConfig {
+  host: string;
+  port: number;
+  secure: boolean;
+  auth: {
+    user: string;
+    pass: string;
+  };
+}
+
+interface OrderEmailData {
+  order: Order;
+  orderItems: (OrderItem & { product: any })[];
+  customerEmail: string;
+  customerName: string;
+  totalAmount: number;
+}
+
+interface SiteInfo {
+  siteName: string;
+  siteTagline: string;
+  siteLogo: string;
+  baseUrl: string;
+}
+
+class EmailService {
+  private transporter: nodemailer.Transporter;
+  private from: string;
+  private fromName: string;
+  private getSiteSettings: () => Promise<SiteSetting[]>;
+
+  constructor(getSiteSettingsCallback: () => Promise<SiteSetting[]>) {
+    // Use hardcoded Mailtrap credentials as fallback since env vars aren't loading properly
+    const config: EmailConfig = {
+      host: process.env.EMAIL_HOST || "sandbox.smtp.mailtrap.io",
+      port: parseInt(process.env.EMAIL_PORT || "587"),
+      secure: process.env.EMAIL_SECURE === "true",
+      auth: {
+        user: process.env.EMAIL_USER || "3e36ba31a3527d",
+        pass: process.env.EMAIL_PASS || "6560b932d97631",
+      },
+    };
+
+    this.from = process.env.EMAIL_FROM || "noreply@freshlyrooted.com";
+    this.fromName = process.env.EMAIL_FROM_NAME || "Freshly Rooted";
+    this.getSiteSettings = getSiteSettingsCallback;
+
+    this.transporter = nodemailer.createTransport(config);
+  }
+
+  private async getSiteInfo(): Promise<SiteInfo> {
+    try {
+      const settings = await this.getSiteSettings();
+      const siteNameSetting = settings.find((s) => s.key === "site_name");
+      const siteTaglineSetting = settings.find((s) => s.key === "site_tagline");
+      const siteLogoSetting = settings.find((s) => s.key === "site_logo");
+
+      // Use environment variable for base URL, fallback to Replit domain or localhost
+      const baseUrl =
+        process.env.VITE_API_URL ||
+        (process.env.REPLIT_DEV_DOMAIN
+          ? `https://${process.env.REPLIT_DEV_DOMAIN}`
+          : "http://localhost:5000");
+
+      return {
+        siteName: siteNameSetting?.value || "Freshly Rooted",
+        siteTagline: siteTaglineSetting?.value || "Fresh from Farm to Table",
+        siteLogo: siteLogoSetting?.value || "",
+        baseUrl,
+      };
+    } catch (error) {
+      console.error("Error fetching site settings for email:", error);
+      // Fallback values
+      const baseUrl =
+        process.env.VITE_API_URL ||
+        (process.env.REPLIT_DEV_DOMAIN
+          ? `https://${process.env.REPLIT_DEV_DOMAIN}`
+          : "http://localhost:5000");
+      return {
+        siteName: "Freshly Rooted",
+        siteTagline: "Fresh from Farm to Table",
+        siteLogo: "",
+        baseUrl,
+      };
+    }
+  }
+
+  async sendOrderNotificationToAdmin(orderData: OrderEmailData): Promise<void> {
+    const { order, orderItems, customerEmail, customerName, totalAmount } =
+      orderData;
+    const siteInfo = await this.getSiteInfo();
+
+    const orderItemsHtml = orderItems
+      .map(
+        (item) => `
+      <tr>
+        <td style="padding: 12px; border-bottom: 1px solid #eee;">${
+          item.product.name
+        }</td>
+        <td style="padding: 12px; border-bottom: 1px solid #eee; text-align: center;">${
+          item.quantity
+        }</td>
+        <td style="padding: 12px; border-bottom: 1px solid #eee; text-align: right;">₹${item.price.toFixed(
+          2
+        )}</td>
+        <td style="padding: 12px; border-bottom: 1px solid #eee; text-align: right;">₹${(
+          item.quantity * item.price
+        ).toFixed(2)}</td>
+      </tr>
+    `
+      )
+      .join("");
+
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>New Order Notification</title>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; }
+          .header { background-color: #2d5016; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+          .content { background-color: white; padding: 30px; border-radius: 0 0 8px 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+          .order-info { background-color: #f8f9fa; padding: 20px; border-radius: 6px; margin: 20px 0; }
+          .customer-info { background-color: #e8f5e8; padding: 15px; border-radius: 6px; margin: 15px 0; }
+          .order-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+          .order-table th { background-color: #2d5016; color: white; padding: 12px; text-align: left; }
+          .total-row { background-color: #f0f8f0; font-weight: bold; }
+          .footer { text-align: center; margin-top: 30px; color: #666; font-size: 14px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>🌱 New Order Received!</h1>
+            <p>${siteInfo.siteName} - ${siteInfo.siteTagline}</p>
+          </div>
+          <div class="content">
+            <div class="order-info">
+              <h2>Order Details</h2>
+              <p><strong>Order ID:</strong> #${order.id}</p>
+              <p><strong>Order Date:</strong> ${new Date(
+                order.createdAt
+              ).toLocaleString("en-IN", {
+                timeZone: "Asia/Kolkata",
+                dateStyle: "full",
+                timeStyle: "short",
+              })}</p>
+              <p><strong>Status:</strong> ${order.status}</p>
+              <p><strong>Payment Method:</strong> ${order.paymentMethod}</p>
+            </div>
+
+            <div class="customer-info">
+              <h3>Customer Information</h3>
+              <p><strong>Name:</strong> ${customerName}</p>
+              <p><strong>Email:</strong> ${customerEmail}</p>
+              <p><strong>Shipping Address:</strong> ${order.shippingAddress}</p>
+              ${
+                order.billingAddress
+                  ? `<p><strong>Billing Address:</strong> ${order.billingAddress}</p>`
+                  : ""
+              }
+            </div>
+
+            <h3>Order Items</h3>
+            <table class="order-table">
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th style="text-align: center;">Quantity</th>
+                  <th style="text-align: right;">Unit Price</th>
+                  <th style="text-align: right;">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${orderItemsHtml}
+                <tr class="total-row">
+                  <td colspan="3" style="padding: 15px; text-align: right;">Total Amount:</td>
+                  <td style="padding: 15px; text-align: right;">₹${totalAmount.toFixed(
+                    2
+                  )}</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div class="footer">
+              <p>This is an automated notification from your ${
+                siteInfo.siteName
+              } admin panel.</p>
+              <p>Please process this order promptly to maintain customer satisfaction.</p>
+            </div>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    await this.transporter.sendMail({
+      from: `"${this.fromName}" <${this.from}>`,
+      to: process.env.ADMIN_EMAIL || "admin@harvestdirect.com",
+      subject: `🌱 New Order #${order.id} - ₹${totalAmount.toFixed(2)} - ${
+        siteInfo.siteName
+      }`,
+      html,
+    });
+  }
+
+  async sendPasswordResetEmail(user: User, resetToken: string): Promise<void> {
+    const siteInfo = await this.getSiteInfo();
+    const resetUrl = `${siteInfo.baseUrl}/reset-password?token=${resetToken}`;
+
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Password Reset Request</title>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; }
+          .header { background-color: #2d5016; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+          .content { background-color: white; padding: 30px; border-radius: 0 0 8px 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+          .reset-button { display: inline-block; background-color: #2d5016; color: white; padding: 15px 30px; text-decoration: none; border-radius: 6px; margin: 20px 0; font-weight: bold; }
+          .warning { background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 6px; margin: 20px 0; color: #856404; }
+          .footer { text-align: center; margin-top: 30px; color: #666; font-size: 14px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>🔐 Password Reset Request</h1>
+            <p>${siteInfo.siteName} - ${siteInfo.siteTagline}</p>
+          </div>
+          <div class="content">
+            <h2>Hello ${user.name}!</h2>
+            <p>We received a request to reset your password for your ${siteInfo.siteName} account.</p>
+            
+            <div style="text-align: center;">
+              <a href="${resetUrl}" class="reset-button">Reset My Password</a>
+            </div>
+            
+            <p>Or copy and paste this link into your browser:</p>
+            <p style="word-break: break-all; background-color: #f8f9fa; padding: 10px; border-radius: 4px; font-family: monospace;">${resetUrl}</p>
+            
+            <div class="warning">
+              <strong>⚠️ Important Security Notice:</strong>
+              <ul>
+                <li>This link will expire in 1 hour for your security</li>
+                <li>If you didn't request this reset, please ignore this email</li>
+                <li>Never share this link with anyone</li>
+              </ul>
+            </div>
+            
+            <p>If you're having trouble clicking the button, contact our support team.</p>
+            
+            <div class="footer">
+              <p>Best regards,<br>The ${siteInfo.siteName} Team</p>
+              <p><small>This is an automated email. Please do not reply to this message.</small></p>
+            </div>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    await this.transporter.sendMail({
+      from: `"${this.fromName}" <${this.from}>`,
+      to: user.email,
+      subject: `🔐 Reset Your ${siteInfo.siteName} Password`,
+      html,
+    });
+  }
+
+  async sendPasswordResetConfirmation(user: User): Promise<void> {
+    const siteInfo = await this.getSiteInfo();
+
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Password Successfully Reset</title>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; }
+          .header { background-color: #2d5016; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+          .content { background-color: white; padding: 30px; border-radius: 0 0 8px 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+          .success { background-color: #d4edda; border: 1px solid #c3e6cb; padding: 15px; border-radius: 6px; margin: 20px 0; color: #155724; }
+          .login-button { display: inline-block; background-color: #2d5016; color: white; padding: 15px 30px; text-decoration: none; border-radius: 6px; margin: 20px 0; font-weight: bold; }
+          .footer { text-align: center; margin-top: 30px; color: #666; font-size: 14px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>✅ Password Reset Successful</h1>
+            <p>${siteInfo.siteName} - ${siteInfo.siteTagline}</p>
+          </div>
+          <div class="content">
+            <h2>Hello ${user.name}!</h2>
+            
+            <div class="success">
+              <strong>✅ Success!</strong> Your password has been successfully reset.
+            </div>
+            
+            <p>Your ${siteInfo.siteName} account password has been updated. You can now log in with your new password.</p>
+            
+            <div style="text-align: center;">
+              <a href="${siteInfo.baseUrl}/login" class="login-button">Login to Your Account</a>
+            </div>
+            
+            <p><strong>Security tip:</strong> If you didn't make this change, please contact our support team immediately.</p>
+            
+            <div class="footer">
+              <p>Best regards,<br>The ${siteInfo.siteName} Team</p>
+              <p><small>This is an automated email. Please do not reply to this message.</small></p>
+            </div>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    await this.transporter.sendMail({
+      from: `"${this.fromName}" <${this.from}>`,
+      to: user.email,
+      subject: `✅ Your ${siteInfo.siteName} Password Has Been Reset`,
+      html,
+    });
+  }
+  async registerEmail(user: User, resetToken: string): Promise<void> {
+    const siteInfo = await this.getSiteInfo();
+    const resetUrl = `${siteInfo.baseUrl}/auth/verify?token=${resetToken}`;
+
+    const html = `
+    <!DOCTYPE html>
+  <html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Verify Your Account</title>
+    <style>
+      body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+      .container { max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; }
+      .header { background-color: #2d5016; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+      .content { background-color: white; padding: 30px; border-radius: 0 0 8px 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+      .verify-button { display: inline-block; background-color: #2d5016; color: white; padding: 15px 30px; text-decoration: none; border-radius: 6px; margin: 20px 0; font-weight: bold; }
+      .warning { background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 6px; margin: 20px 0; color: #856404; }
+      .footer { text-align: center; margin-top: 30px; color: #666; font-size: 14px; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>🔐 Verify Your Account</h1>
+        <p>${siteInfo.siteName} - ${siteInfo.siteTagline}</p>
+      </div>
+      <div class="content">
+        <h2>Welcome ${user.name}!</h2>
+        <p>Thank you for creating an account with ${siteInfo.siteName}. To complete your registration, please verify your email address.</p>
+
+        <div style="text-align: center;">
+          <a href="${resetUrl}" class="verify-button">Verify My Account</a>
+        </div>
+
+        <p>Or copy and paste this link into your browser:</p>
+        <p style="word-break: break-all; background-color: #f8f9fa; padding: 10px; border-radius: 4px; font-family: monospace;">${resetUrl}</p>
+
+        <div class="warning">
+          <strong>⚠️ Important Security Notice:</strong>
+          <ul>
+            <li>This link will expire in 24 hours for your security</li>
+            <li>If you didn't create this account, please ignore this email</li>
+            <li>Never share this link with anyone</li>
+          </ul>
+        </div>
+
+        <p>If you're having trouble clicking the button, contact our support team.</p>
+
+        <p>After verification, you'll have full access to our platform to enjoy fresh farm products.</p>
+
+        <div class="footer">
+          <p>Best regards,<br>The ${siteInfo.siteName} Team</p>
+          <p><small>This is an automated email. Please do not reply to this message.</small></p>
+        </div>
+      </div>
+    </div>
+  </body>
+  </html>
+  `;
+    try {
+      const mail = await this.transporter.sendMail({
+        from: `"${this.fromName}" <${this.from}>`,
+        to: user.email,
+        subject: `🔐 Verify Your ${siteInfo.siteName} Account`,
+        html,
+      });
+      console.log("Registration email sent successfully:", mail);
+    } catch (error) {
+      console.log("Error sending registration email:", error);
+    }
+  }
+  async sendEmailChangeVerification(
+    user: User,
+    newEmail: string,
+    verificationToken: string
+  ): Promise<void> {
+    const siteInfo = await this.getSiteInfo();
+    const verificationUrl = `${siteInfo.baseUrl}/verify-email-change?token=${verificationToken}`;
+
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Email Change Verification</title>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; }
+          .header { background-color: #2d5016; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+          .content { background-color: white; padding: 30px; border-radius: 0 0 8px 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+          .verify-button { display: inline-block; background-color: #2d5016; color: white; padding: 15px 30px; text-decoration: none; border-radius: 6px; margin: 20px 0; font-weight: bold; }
+          .warning { background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 6px; margin: 20px 0; color: #856404; }
+          .info { background-color: #e8f5e8; border: 1px solid #c8e6c8; padding: 15px; border-radius: 6px; margin: 20px 0; color: #2d5016; }
+          .footer { text-align: center; margin-top: 30px; color: #666; font-size: 14px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>📧 Email Change Verification</h1>
+            <p>${siteInfo.siteName} - ${siteInfo.siteTagline}</p>
+          </div>
+          <div class="content">
+            <h2>Hello ${user.name}!</h2>
+            <p>We received a request to change the email address associated with your ${
+              siteInfo.siteName
+            } account.</p>
+            
+            <div class="info">
+              <strong>📋 Change Details:</strong>
+              <ul>
+                <li><strong>Current Email:</strong> ${user.email}</li>
+                <li><strong>New Email:</strong> ${newEmail}</li>
+                <li><strong>Request Time:</strong> ${new Date().toLocaleString()}</li>
+              </ul>
+            </div>
+            
+            <p>To confirm this email change, please click the verification button below:</p>
+            
+            <div style="text-align: center;">
+              <a href="${verificationUrl}" class="verify-button">Verify Email Change</a>
+            </div>
+            
+            <p>Or copy and paste this link into your browser:</p>
+            <p style="word-break: break-all; background-color: #f8f9fa; padding: 10px; border-radius: 4px; font-family: monospace;">${verificationUrl}</p>
+            
+            <div class="warning">
+              <strong>⚠️ Important Security Notice:</strong>
+              <ul>
+                <li>This verification link will expire in 1 hour for your security</li>
+                <li>If you didn't request this email change, please ignore this email and contact support immediately</li>
+                <li>After verification, you'll need to use the new email address to log in</li>
+                <li>Never share this verification link with anyone</li>
+              </ul>
+            </div>
+            
+            <p>If you're having trouble clicking the button, contact our support team.</p>
+            
+            <div class="footer">
+              <p>Best regards,<br>The ${siteInfo.siteName} Team</p>
+              <p><small>This is an automated email. Please do not reply to this message.</small></p>
+            </div>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    try {
+      const mail = await this.transporter.sendMail({
+        from: `"${this.fromName}" <${this.from}>`,
+        to: user.email, // Send to current email address
+        subject: `📧 Verify Your Email Change Request - ${siteInfo.siteName}`,
+        html,
+      });
+      console.log("Email change verification sent successfully:", mail);
+    } catch (error) {
+      console.log("Error sending email change verification:", error);
+      throw error;
+    }
+  }
+
+  async sendTrackingUpdateNotification(
+    customerEmail: string,
+    customerName: string,
+    orderId: string,
+    oldTrackingId: string,
+    newTrackingId: string
+  ): Promise<void> {
+    const siteInfo = await this.getSiteInfo();
+
+    // Create logo URL if site logo exists
+    let logoUrl = "";
+    if (siteInfo.siteLogo) {
+      // Check if it's already a full URL
+      if (siteInfo.siteLogo.startsWith("http")) {
+        logoUrl = siteInfo.siteLogo;
+      } else {
+        // It's a relative path, make it absolute
+        logoUrl = `${siteInfo.baseUrl}${
+          siteInfo.siteLogo.startsWith("/") ? "" : "/"
+        }${siteInfo.siteLogo}`;
+      }
+    }
+
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Order Tracking Updated</title>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; }
+          .header { background-color: #2d5016; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+          .logo { max-width: 120px; height: auto; margin-bottom: 10px; }
+          .content { background-color: white; padding: 30px; border-radius: 0 0 8px 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+          .tracking-update { background-color: #e8f5e8; border: 1px solid #c8e6c8; padding: 20px; border-radius: 6px; margin: 20px 0; }
+          .tracking-box { background-color: #f8f9fa; border: 2px dashed #2d5016; padding: 15px; border-radius: 6px; text-align: center; margin: 10px 0; }
+          .old-tracking { background-color: #fff3cd; border-color: #ffeaa7; color: #856404; }
+          .new-tracking { background-color: #d4edda; border-color: #c3e6cb; color: #155724; }
+          .track-button { display: inline-block; background-color: #2d5016; color: white; padding: 15px 30px; text-decoration: none; border-radius: 6px; margin: 20px 0; font-weight: bold; }
+          .info { background-color: #d1ecf1; border: 1px solid #bee5eb; padding: 15px; border-radius: 6px; margin: 20px 0; color: #0c5460; }
+          .footer { text-align: center; margin-top: 30px; color: #666; font-size: 14px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+        
+            <h1>📦 Tracking ID Updated</h1>
+            <p>${siteInfo.siteName} - ${siteInfo.siteTagline}</p>
+          </div>
+          <div class="content">
+            <h2>Hello ${customerName}!</h2>
+            <p>Your order tracking information has been updated with the latest details from our logistics partner.</p>
+            
+            <div class="tracking-update">
+              <h3>📋 Tracking Update Details</h3>
+              <p><strong>Order ID:</strong> #${orderId}</p>
+              <p><strong>Updated on:</strong> ${new Date().toLocaleString(
+                "en-IN",
+                {
+                  timeZone: "Asia/Kolkata",
+                  dateStyle: "full",
+                  timeStyle: "short",
+                }
+              )}</p>
+              
+              <div class="tracking-box old-tracking">
+                <strong>Previous Tracking ID:</strong><br>
+                <code style="font-size: 16px; font-weight: bold;">${oldTrackingId}</code>
+              </div>
+              
+              <div style="text-align: center; margin: 15px 0;">
+                <span style="font-size: 24px;">⬇️</span>
+              </div>
+              
+              <div class="tracking-box new-tracking">
+                <strong>New Tracking ID:</strong><br>
+                <code style="font-size: 16px; font-weight: bold;">${newTrackingId}</code>
+              </div>
+            </div>
+            
+            <div class="info">
+              <strong>🔍 What does this mean?</strong>
+              <ul>
+                <li>Your order is being processed by our logistics partner</li>
+                <li>The new tracking ID provides more accurate delivery updates</li>
+                <li>You can use this new tracking ID to monitor your shipment</li>
+                <li>All future notifications will use the new tracking ID</li>
+              </ul>
+            </div>
+            
+
+            
+            <p><strong>💡 Pro Tip:</strong> Save the new tracking ID for easy reference. You can track your order anytime on our website or through your logistics partner's tracking page.</p>
+            
+            <p>If you have any questions about your order or delivery, please don't hesitate to contact our support team.</p>
+            
+            <div class="footer">
+              <p>Thank you for choosing ${siteInfo.siteName}!</p>
+              <p>Best regards,<br>The ${siteInfo.siteName} Team</p>
+              <p><small>This is an automated notification. Please do not reply to this message.</small></p>
+            </div>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    try {
+      const mail = await this.transporter.sendMail({
+        from: `"${this.fromName}" <${this.from}>`,
+        to: customerEmail,
+        subject: `📦 Order #${orderId} Tracking Updated - ${siteInfo.siteName}`,
+        html,
+      });
+      console.log(
+        `Tracking update email sent successfully to ${customerEmail}:`,
+        mail.messageId
+      );
+    } catch (error) {
+      console.error("Error sending tracking update email:", error);
+      throw error;
+    }
+  }
+
+  async verifyConnection(): Promise<boolean> {
+    try {
+      await this.transporter.verify();
+      return true;
+    } catch (error) {
+      console.error("Email service connection failed:", error);
+      return false;
+    }
+  }
+
+  async sendAdminEmailUpdateNotification(
+    user: User,
+    oldEmail: string,
+    newEmail: string
+  ): Promise<void> {
+    const siteInfo = await this.getSiteInfo();
+
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Email Updated by Admin</title>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; }
+          .header { background-color: #2d5016; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+          .content { background-color: white; padding: 30px; border-radius: 0 0 8px 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+          .update-info { background-color: #e8f5e8; border: 1px solid #c8e6c8; padding: 20px; border-radius: 6px; margin: 20px 0; }
+          .warning { background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 6px; margin: 20px 0; color: #856404; }
+          .footer { text-align: center; margin-top: 30px; color: #666; font-size: 14px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>📧 Email Address Updated</h1>
+            <p>${siteInfo.siteName} - ${siteInfo.siteTagline}</p>
+          </div>
+          <div class="content">
+            <h2>Hello ${user.name}!</h2>
+            <p>Your email address has been updated by our administrator.</p>
+            
+            <div class="update-info">
+              <h3>📋 Update Details:</h3>
+              <ul>
+                <li><strong>Previous Email:</strong> ${oldEmail}</li>
+                <li><strong>New Email:</strong> ${newEmail}</li>
+                <li><strong>Updated on:</strong> ${new Date().toLocaleString()}</li>
+                <li><strong>Updated by:</strong> Administrator</li>
+              </ul>
+            </div>
+            
+            <div class="warning">
+              <strong>⚠️ Important:</strong>
+              <ul>
+                <li>Please use your new email address (${newEmail}) for future logins</li>
+                <li>All future communications will be sent to your new email address</li>
+                <li>If you didn't request this change, please contact our support team immediately</li>
+              </ul>
+            </div>
+            
+            <p>If you have any questions or concerns about this change, please don't hesitate to contact our support team.</p>
+            
+            <div class="footer">
+              <p>Best regards,<br>The ${siteInfo.siteName} Team</p>
+              <p><small>This is an automated notification. Please do not reply to this message.</small></p>
+            </div>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    // Send to both old and new email addresses
+    await Promise.all([
+      this.transporter.sendMail({
+        from: `"${this.fromName}" <${this.from}>`,
+        to: oldEmail,
+        subject: `📧 Your ${siteInfo.siteName} Email Address Has Been Updated`,
+        html,
+      }),
+      this.transporter.sendMail({
+        from: `"${this.fromName}" <${this.from}>`,
+        to: newEmail,
+        subject: `📧 Your ${siteInfo.siteName} Email Address Has Been Updated`,
+        html,
+      }),
+    ]);
+  }
+
+  async sendAdminPasswordUpdateNotification(
+    user: User,
+    newPassword: string
+  ): Promise<void> {
+    const siteInfo = await this.getSiteInfo();
+
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Password Updated by Admin</title>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; }
+          .header { background-color: #2d5016; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+          .content { background-color: white; padding: 30px; border-radius: 0 0 8px 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+          .password-info { background-color: #e8f5e8; border: 1px solid #c8e6c8; padding: 20px; border-radius: 6px; margin: 20px 0; }
+          .password-box { background-color: #f8f9fa; border: 2px dashed #2d5016; padding: 15px; border-radius: 6px; text-align: center; margin: 10px 0; font-family: monospace; font-size: 18px; font-weight: bold; }
+          .warning { background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 6px; margin: 20px 0; color: #856404; }
+          .login-button { display: inline-block; background-color: #2d5016; color: white; padding: 15px 30px; text-decoration: none; border-radius: 6px; margin: 20px 0; font-weight: bold; }
+          .footer { text-align: center; margin-top: 30px; color: #666; font-size: 14px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>🔐 Password Updated</h1>
+            <p>${siteInfo.siteName} - ${siteInfo.siteTagline}</p>
+          </div>
+          <div class="content">
+            <h2>Hello ${user.name}!</h2>
+            <p>Your account password has been updated by our administrator.</p>
+            
+            <div class="password-info">
+              <h3>🔑 Your New Password Details:</h3>
+              <p><strong>Updated on:</strong> ${new Date().toLocaleString()}</p>
+              <p><strong>Updated by:</strong> Administrator</p>
+              
+              <p><strong>Your new password is:</strong></p>
+              <div class="password-box">${newPassword}</div>
+              
+              <p><small><strong>Security Note:</strong> Please save this password securely and consider changing it after your next login.</small></p>
+            </div>
+            
+            <div style="text-align: center;">
+              <a href="${siteInfo.baseUrl}/login" class="login-button">Login to Your Account</a>
+            </div>
+            
+            <div class="warning">
+              <strong>⚠️ Important Security Information:</strong>
+              <ul>
+                <li>Please log in with your new password as soon as possible</li>
+                <li>We recommend changing this password after logging in</li>
+                <li>If you didn't request this change, please contact our support team immediately</li>
+                <li>Never share your password with anyone</li>
+              </ul>
+            </div>
+            
+            <p>If you have any questions or concerns about this change, please contact our support team.</p>
+            
+            <div class="footer">
+              <p>Best regards,<br>The ${siteInfo.siteName} Team</p>
+              <p><small>This is an automated notification. Please do not reply to this message.</small></p>
+            </div>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    await this.transporter.sendMail({
+      from: `"${this.fromName}" <${this.from}>`,
+      to: user.email,
+      subject: `🔐 Your ${siteInfo.siteName} Password Has Been Updated`,
+      html,
+    });
+  }
+}
+
+// EmailService will be initialized in the main server file with the storage callback
+export { EmailService };

@@ -1,0 +1,175 @@
+import express, { type Request, Response, NextFunction } from "express";
+import { registerRoutes } from "./routes";
+import { setupVite, serveStatic, log } from "./vite";
+import { initializeDatabase } from "./initDb";
+import cron from "node-cron";
+import cors from "cors";
+import morgan from "morgan";
+import dotenv from "dotenv";
+import { disableExpiredCoupons } from "./jobs/disableExpiredCoupons";
+import { scheduleCouponExpiration } from "./jobs/scheduleCouponExpiration";
+import adminUsersRoutes from "./routes/admin/users";
+dotenv.config();
+const app = express();
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+
+app.use((req, res, next) => {
+  const start = Date.now();
+  const path = req.path;
+  let capturedJsonResponse: Record<string, any> | undefined = undefined;
+
+  const originalResJson = res.json;
+  res.json = function (bodyJson, ...args) {
+    capturedJsonResponse = bodyJson;
+    return originalResJson.apply(res, [bodyJson, ...args]);
+  };
+
+  res.on("finish", () => {
+    const duration = Date.now() - start;
+    if (path.startsWith("/api")) {
+      let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
+      if (capturedJsonResponse) {
+        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
+      }
+
+      if (logLine.length > 80) {
+        logLine = logLine.slice(0, 79) + "…";
+      }
+
+      log(logLine);
+    }
+  });
+
+  next();
+});
+// Configure CORS for Replit environment
+const allowedOrigins = [
+  "http://localhost:5000",
+  "http://0.0.0.0:5000",
+  "https://new-farmer-e5cl.onrender.com",
+  "https://www.freshlyrooted.in",
+  "http://193.203.161.214",
+  "https://freshlyrooted.in",
+  "http://72.61.170.65"
+];
+
+// Add Replit domain patterns
+const isReplitDomain = (origin: string) => {
+  return (
+    origin &&
+    (origin.includes(".replit.dev") ||
+      origin.includes(".repl.co") ||
+      origin.includes(".replit.app") ||
+      origin.includes("replit.com"))
+  );
+};
+
+app.use(
+  cors({
+    origin: function (
+      origin: string | undefined,
+      callback: (err: Error | null, allow?: boolean) => void
+    ) {
+      // Allow requests with no origin (same-origin requests, mobile apps, curl, etc.)
+      if (!origin) {
+        callback(null, true);
+        return;
+      }
+
+      // Allow all Replit domains
+      if (
+        origin.includes(".replit.dev") ||
+        origin.includes(".repl.co") ||
+        origin.includes(".replit.app") ||
+        origin.includes("replit.com")
+      ) {
+        callback(null, true);
+        return;
+      }
+
+      // Allow localhost for development
+      if (origin.startsWith("http://localhost:") || origin.startsWith("http://0.0.0.0:")) {
+        callback(null, true);
+        return;
+      }
+
+      // Allow render.com deployment
+      if (origin.includes("onrender.com")) {
+        callback(null, true);
+        return;
+      }
+
+      // For development mode, be more permissive
+      if (process.env.NODE_ENV === "development") {
+        callback(null, true);
+        return;
+      }
+
+      callback(null, false);
+    },
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+    credentials: true,
+  })
+);
+app.use(morgan("dev"));
+(async () => {
+  // Test database connection first
+  const { testDatabaseConnection } = await import("./db.ts");
+  const dbConnected = await testDatabaseConnection();
+
+  if (dbConnected) {
+    // Only initialize database with seed data in development mode
+    // Skip seed data in production to preserve real user data
+    const isProduction = process.env.NODE_ENV === 'production';
+    
+    if (!isProduction && process.env.NODE_ENV === 'development') {
+      try {
+        await initializeDatabase();
+        log("Database initialized successfully with seed data");
+      } catch (error) {
+        log("Error initializing database: " + error);
+      }
+    } else {
+      log("Production environment detected - skipping seed data initialization");
+    }
+  } else {
+    log(
+      "Warning: Database connection failed, continuing without database initialization"
+    );
+  }
+
+  // Register API routes FIRST - this is crucial
+  const server = await registerRoutes(app);
+  
+  // Admin routes should be registered before static serving
+  app.use("/api/admin/users", adminUsersRoutes);
+
+  // Error handling middleware
+  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+    const status = err.status || err.statusCode || 500;
+    const message = err.message || "Internal Server Error";
+
+    res.status(status).json({ message });
+    throw err;
+  });
+
+  // Static file serving should come AFTER all API routes
+  if (app.get("env") === "development") {
+    await setupVite(app, server);
+  } else {
+    serveStatic(app);
+  }
+
+  // Run every day at 12:00 AM
+  scheduleCouponExpiration();
+  
+  // Configure port for production environment
+  const port = parseInt(process.env.PORT || "5000", 10);
+  const host = "0.0.0.0";
+
+  server.listen(port, host, () => {
+    log(`Server running on http://${host}:${port}`);
+    log(`API endpoints available at http://${host}:${port}/api/`);
+  });
+})();
