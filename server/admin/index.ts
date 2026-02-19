@@ -7,7 +7,7 @@ import { users } from "@shared/schema";
 import { db } from "../db";
 import { storage } from "../storage";
 import { eq } from "drizzle-orm";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
 // Create admin router

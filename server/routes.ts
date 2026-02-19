@@ -2,7 +2,7 @@ import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { v4 as uuidv4 } from "uuid";
-import * as bcrypt from "bcrypt";
+import * as bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import * as crypto from "crypto";
 import * as nodemailer from "nodemailer";

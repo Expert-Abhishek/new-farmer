@@ -17,13 +17,16 @@ import { useAnimations } from "@/hooks/use-animations";
 import { useAuth } from "@/context/AuthContext";
 import { formatSnakeCase } from "@/utils/formatSnakeCase";
 import { formatUnit } from "@/utils/formatUnit";
-
+import { Helmet } from "react-helmet-async";
+const SITE_URL = import.meta.env.VITE_BASE_URL;
 export default function ProductDetail() {
   const { id } = useParams<{ id: string }>();
-  const productId = parseInt(id);
+  const [slug, pid] = id.split("--")
+  const productId = parseInt(pid);
   const { isAuthenticated } = useAuth();
   const [location, navigate] = useLocation();
 
+  
   // Animation controller
   const { setupScrollAnimation } = useAnimations();
 
@@ -73,7 +76,7 @@ export default function ProductDetail() {
     .filter((p: any) => p.id !== productId)
     .slice(0, 4);
   const [selectedVariant, setSelectedVariant] = useState<any | null>(null);
-
+  const canonicalUrl = `${SITE_URL}/products/${slug}`;
   // Set default variant on product load or when product changes
   useEffect(() => {
     if (product?.variants && product.variants.length > 0) {
@@ -113,6 +116,10 @@ export default function ProductDetail() {
 
   return (
     <>
+    {/* header  for seo*/}
+      <Helmet>
+        <link rel="canonical" href={canonicalUrl} />
+      </Helmet>
       {/* Product Detail Section */}
       <section className="pt-32 pb-16 bg-background">
         <div className="container mx-auto px-4 lg:px-8">

@@ -101,3 +101,11 @@ export function getInitials(name: string): string {
     .toUpperCase()
     .substring(0, 2);
 }
+
+
+export const slugify = (text = "") =>
+  text
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
