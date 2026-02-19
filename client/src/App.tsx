@@ -33,21 +33,14 @@ import AdminLogin from "@/pages/admin/login";
 import { CartProvider } from "@/context/CartContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { SiteProvider } from "@/context/SiteContext";
-<<<<<<< HEAD
 import { HelmetProvider } from "react-helmet-async";
-=======
-
->>>>>>> 04cd047bc13fb4f9141283d0051bba761fa59399
 
 import Layout from "@/components/Layout";
 import { AdminRoutes } from "./AdminRoutes";
 
 function App() {
   return (
-<<<<<<< HEAD
     <HelmetProvider>
-=======
->>>>>>> 04cd047bc13fb4f9141283d0051bba761fa59399
     <TooltipProvider>
         <AuthProvider>
           <CartProvider>
@@ -118,10 +111,7 @@ function App() {
           </CartProvider>
         </AuthProvider>
       </TooltipProvider>
-<<<<<<< HEAD
       </HelmetProvider>
-=======
->>>>>>> 04cd047bc13fb4f9141283d0051bba761fa59399
   );
 }
 

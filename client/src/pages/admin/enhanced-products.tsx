@@ -67,10 +67,7 @@ import { getImageUrl } from "@/utils/imageUtils";
 import * as z from "zod";
 import ImageUpload from "@/components/admin/ImageUpload";
 import MainLoader from "@/utils/MainLoader";
-<<<<<<< HEAD
 import { slugify } from "@/lib/utils";
-=======
->>>>>>> 04cd047bc13fb4f9141283d0051bba761fa59399
 
 // Enhanced Product type with all fields
 interface ProductVariant {
@@ -496,14 +493,8 @@ export default function EnhancedAdminProducts() {
 
       toast({
         title: currentFeatured ? "Product unfeatured" : "Product featured",
-<<<<<<< HEAD
         description: `The product has been ${currentFeatured ? "removed from" : "added to"
           } featured products.`,
-=======
-        description: `The product has been ${
-          currentFeatured ? "removed from" : "added to"
-        } featured products.`,
->>>>>>> 04cd047bc13fb4f9141283d0051bba761fa59399
       });
     } catch (err) {
       toast({
@@ -537,7 +528,6 @@ export default function EnhancedAdminProducts() {
 
       variants: product.variants?.length
         ? product.variants.map((v) => ({
-<<<<<<< HEAD
           id: v.id, // Include the variant ID for updates
           price: v.price,
           discountPrice: v.discountPrice ?? undefined,
@@ -547,17 +537,6 @@ export default function EnhancedAdminProducts() {
           stockQuantity: v.stockQuantity,
           sku: v.sku ?? "",
         }))
-=======
-            id: v.id, // Include the variant ID for updates
-            price: v.price,
-            discountPrice: v.discountPrice ?? undefined,
-            quantity: v.quantity,
-            unit: v.unit,
-            weight: v.weight ?? 0, // Include weight field
-            stockQuantity: v.stockQuantity,
-            sku: v.sku ?? "",
-          }))
->>>>>>> 04cd047bc13fb4f9141283d0051bba761fa59399
         : [],
 
       imageUrl: product.imageUrl,
@@ -628,11 +607,6 @@ export default function EnhancedAdminProducts() {
         }
         return prev;
       });
-<<<<<<< HEAD
-
-=======
-      
->>>>>>> 04cd047bc13fb4f9141283d0051bba761fa59399
       // Always update uploadedImages to remove the image
       setUploadedImages((prev) => {
         const filtered = prev.filter((img) => img !== imagePath);
@@ -640,15 +614,9 @@ export default function EnhancedAdminProducts() {
         const currentImages = form.getValues("imageUrls");
         const imageArray = currentImages
           ? currentImages
-<<<<<<< HEAD
             .split(",")
             .map((img) => img.trim())
             .filter((img) => img && img !== imagePath)
-=======
-              .split(",")
-              .map((img) => img.trim())
-              .filter((img) => img && img !== imagePath)
->>>>>>> 04cd047bc13fb4f9141283d0051bba761fa59399
           : [];
         form.setValue("imageUrls", imageArray.join(","));
         return filtered;
@@ -699,11 +667,7 @@ export default function EnhancedAdminProducts() {
   // Handle form submission for creating/editing
   const onSubmit = async (data: z.infer<typeof enhancedProductFormSchema>) => {
     try {
-<<<<<<< HEAD
       
-=======
-      console.log("Form submission started with data:", data);
->>>>>>> 04cd047bc13fb4f9141283d0051bba761fa59399
 
       const token = localStorage.getItem("adminToken");
       if (!token) {
@@ -726,7 +690,6 @@ export default function EnhancedAdminProducts() {
       // Process image URLs if provided
       const imageUrls = data.imageUrls
         ? data.imageUrls
-<<<<<<< HEAD
           .split(",")
           .map((url) => url.trim())
           .filter((url) => url)
@@ -734,13 +697,6 @@ export default function EnhancedAdminProducts() {
       const generatedSlug = data.slug
         ? slugify(data.slug)
         : slugify(data.name);
-=======
-            .split(",")
-            .map((url) => url.trim())
-            .filter((url) => url)
-        : uploadedImages;
-
->>>>>>> 04cd047bc13fb4f9141283d0051bba761fa59399
       const requestData = {
         ...data,
         imageUrl: finalImageUrl,
@@ -749,16 +705,10 @@ export default function EnhancedAdminProducts() {
         variants: data.variants,
         metaTitle: data.metaTitle || null,
         metaDescription: data.metaDescription || null,
-<<<<<<< HEAD
         slug: generatedSlug,
       };
 
      
-=======
-        slug: data.slug || null,
-      };
-
->>>>>>> 04cd047bc13fb4f9141283d0051bba761fa59399
       let response;
 
       if (productToEdit) {
@@ -789,15 +739,9 @@ export default function EnhancedAdminProducts() {
       if (!response.ok) {
         throw new Error(
           responseData.message ||
-<<<<<<< HEAD
           (productToEdit
             ? "Failed to update product"
             : "Failed to create product")
-=======
-            (productToEdit
-              ? "Failed to update product"
-              : "Failed to create product")
->>>>>>> 04cd047bc13fb4f9141283d0051bba761fa59399
         );
       }
 
@@ -997,12 +941,9 @@ export default function EnhancedAdminProducts() {
                                       ` (+${product.variants.length - 1} more)`}
                                   </p>
                                 )}
-<<<<<<< HEAD
                                 <p className="text-xs text-muted-foreground">
                                   URL Slug: {product.slug }
                                 </p>
-=======
->>>>>>> 04cd047bc13fb4f9141283d0051bba761fa59399
                             </div>
                           </div>
                         </TableCell>
@@ -1998,17 +1939,10 @@ export default function EnhancedAdminProducts() {
                 )}
               {(!productToEdit.imageUrls ||
                 productToEdit.imageUrls.length === 0) && (
-<<<<<<< HEAD
                   <div className="text-center py-8 text-muted-foreground">
                     No additional images available
                   </div>
                 )}
-=======
-                <div className="text-center py-8 text-muted-foreground">
-                  No additional images available
-                </div>
-              )}
->>>>>>> 04cd047bc13fb4f9141283d0051bba761fa59399
             </div>
           )}
         </DialogContent>
