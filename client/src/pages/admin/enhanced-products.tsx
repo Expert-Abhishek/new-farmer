@@ -580,15 +580,9 @@ export default function EnhancedAdminProducts() {
       const currentImages = form.getValues("imageUrls");
       const imageArray = currentImages
         ? currentImages
-<<<<<<< HEAD
           .split(",")
           .map((img) => img.trim())
           .filter((img) => img)
-=======
-            .split(",")
-            .map((img) => img.trim())
-            .filter((img) => img)
->>>>>>> 04cd047bc13fb4f9141283d0051bba761fa59399
         : [];
       imageArray.push(imagePath);
       form.setValue("imageUrls", imageArray.join(","));

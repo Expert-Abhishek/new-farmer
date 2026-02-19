@@ -2,11 +2,7 @@ import { Request, Response } from 'express';
 import { db } from '../db';
 import { users, orders, payments } from '@shared/schema';
 import { eq, like, desc, asc, count, and, gte, lte, sql, isNull, isNotNull } from 'drizzle-orm';
-<<<<<<< HEAD
 import * as bcrypt from 'bcryptjs';
-=======
-import * as bcrypt from 'bcrypt';
->>>>>>> 04cd047bc13fb4f9141283d0051bba761fa59399
 
 // GET all users with pagination, sorting and filtering
 export const getAllUsers = async (req: Request, res: Response) => {
