@@ -1,6 +1,10 @@
 import { Request, Response } from "express";
 import { eq, like, or, desc, asc, sql } from "drizzle-orm";
+<<<<<<< HEAD
 import bcrypt from "bcryptjs";
+=======
+import bcrypt from "bcrypt";
+>>>>>>> 04cd047bc13fb4f9141283d0051bba761fa59399
 import { db } from "../../db";
 import { users, orders } from "../../../shared/schema";
 import { EmailService } from "../../emailService";

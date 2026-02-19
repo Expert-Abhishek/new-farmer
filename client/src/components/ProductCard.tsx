@@ -76,7 +76,11 @@ export default function ProductCard({ product }: ProductCardProps) {
       className="h-full"
     >
       <Card className="flex flex-col h-full bg-cream rounded-lg overflow-hidden shadow-md hover:shadow-xl transition duration-300">
+<<<<<<< HEAD
         <Link href={`/products/${product.slug}--${product.id}`} className="block">
+=======
+        <Link href={`/products/${product.id}`} className="block">
+>>>>>>> 04cd047bc13fb4f9141283d0051bba761fa59399
           <div className="relative overflow-hidden aspect-square">
             {/* {hasDiscount && (
               <div className="absolute top-2 left-2 z-10">
@@ -108,7 +112,11 @@ export default function ProductCard({ product }: ProductCardProps) {
               <Badge variant="info">{product.subcategory}</Badge>
             )}
           </div>
+<<<<<<< HEAD
           <Link href={`/products/${product.slug}--${product.id}`} className="block">
+=======
+          <Link href={`/products/${product.id}`} className="block">
+>>>>>>> 04cd047bc13fb4f9141283d0051bba761fa59399
             {/* ⭐ Product Name */}
             <h3 className="text-base sm:text-lg font-semibold text-gray-800 truncate">
               {product.name}
