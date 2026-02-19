@@ -91,10 +91,7 @@
     "react": "^18.3.1",
     "react-day-picker": "^8.10.1",
     "react-dom": "^18.3.1",
-<<<<<<< HEAD
     "react-helmet-async": "^2.0.5",
-=======
->>>>>>> 04cd047bc13fb4f9141283d0051bba761fa59399
     "react-hook-form": "^7.55.0",
     "react-icons": "^5.4.0",
     "react-rating-stars-component": "^2.2.0",
@@ -109,10 +106,6 @@
     "uuid": "^11.1.0",
     "vaul": "^1.1.2",
     "wouter": "^3.3.5",
-<<<<<<< HEAD
-=======
-    
->>>>>>> 04cd047bc13fb4f9141283d0051bba761fa59399
     "xlsx": "^0.18.5",
     "zod": "^3.24.2",
     "zod-validation-error": "^3.4.0",
@@ -131,10 +124,6 @@
     "@types/passport-local": "^1.0.38",
     "@types/react": "^18.3.11",
     "@types/react-dom": "^18.3.1",
-<<<<<<< HEAD
-=======
-    
->>>>>>> 04cd047bc13fb4f9141283d0051bba761fa59399
     "@vitejs/plugin-react": "^4.3.2",
     "autoprefixer": "^10.4.20",
     "cross-env": "^7.0.3",
@@ -147,10 +136,5 @@
     "tsx": "^4.20.3",
     "typescript": "^5.9.2",
     "vite": "^5.4.14"
-<<<<<<< HEAD
   }
-=======
-  },
-  "optionalDependencies": {}
->>>>>>> 04cd047bc13fb4f9141283d0051bba761fa59399
 }
