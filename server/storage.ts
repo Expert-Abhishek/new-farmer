@@ -982,7 +982,14 @@ export class DatabaseStorage implements IStorage {
       orderBy: [desc(orders.deliveredAt)],
     });
   }
+ async getProductIdBySlug(slug: string): Promise<number | undefined> {
+    const [result] = await db
+      .select({ id: products.id })
+      .from(products)
+      .where(eq(products.slug, slug));
 
+    return result?.id;
+  }
   async getProductById(
     id: number
   ): Promise<(Product & { variants: ProductVariant[] }) | undefined> {

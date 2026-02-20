@@ -408,7 +408,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to fetch product" });
     }
   });
+  // Get product by slug
+app.get(`${apiPrefix}/products/seo/:slug`, async (req, res) => {
+  try {
+    const { slug } = req.params;
 
+    if (!slug) {
+      return res.status(400).json({ message: "Slug required" });
+    }
+
+    const productId = await storage.getProductIdBySlug(slug);
+
+    if (!productId) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    res.json({ id: productId });
+  } catch (err) {
+    res.status(500).json({ message: "SEO lookup failed" });
+  }
+});
   // Get all farmers
   app.get(`${apiPrefix}/farmers`, async (req, res) => {
     try {

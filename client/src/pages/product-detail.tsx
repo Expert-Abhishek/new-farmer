@@ -21,12 +21,12 @@ import { Helmet } from "react-helmet-async";
 const SITE_URL = import.meta.env.VITE_BASE_URL;
 export default function ProductDetail() {
   const { id } = useParams<{ id: string }>();
-  const [slug, pid] = id.split("--")
-  const productId = parseInt(pid);
+
+
   const { isAuthenticated } = useAuth();
   const [location, navigate] = useLocation();
 
-  
+
   // Animation controller
   const { setupScrollAnimation } = useAnimations();
 
@@ -39,6 +39,14 @@ export default function ProductDetail() {
     window.scrollTo(0, 0);
     setupScrollAnimation();
   }, [setupScrollAnimation]);
+  // Get productid by slug  
+  const { data: seoProduct, isLoading: isSeoLoading } = useQuery<{
+    id: number;
+  }>({
+    queryKey: [`/api/products/seo/${id}`],
+    enabled: !!id,
+  });
+  const productId =seoProduct?.id
 
   // Get product data
   const { data: product, isLoading: isLoadingProduct } = useQuery<any>({
@@ -62,7 +70,7 @@ export default function ProductDetail() {
   const averageRating =
     reviews && Array.isArray(reviews) && reviews.length > 0
       ? reviews.reduce((sum: number, review: any) => sum + review.rating, 0) /
-        reviews.length
+      reviews.length
       : 0;
 
   // Get related products (same category)
@@ -76,7 +84,7 @@ export default function ProductDetail() {
     .filter((p: any) => p.id !== productId)
     .slice(0, 4);
   const [selectedVariant, setSelectedVariant] = useState<any | null>(null);
-  const canonicalUrl = `${SITE_URL}/products/${slug}`;
+  const canonicalUrl = `${SITE_URL}/products/${id}`;
   // Set default variant on product load or when product changes
   useEffect(() => {
     if (product?.variants && product.variants.length > 0) {
@@ -116,7 +124,7 @@ export default function ProductDetail() {
 
   return (
     <>
-    {/* header  for seo*/}
+      {/* header  for seo*/}
       <Helmet>
         <link rel="canonical" href={canonicalUrl} />
       </Helmet>
@@ -213,11 +221,10 @@ export default function ProductDetail() {
                       <button
                         key={variant.id}
                         onClick={() => setSelectedVariant(variant)}
-                        className={`px-4 py-2 border rounded-md ${
-                          selectedVariant?.id === variant.id
+                        className={`px-4 py-2 border rounded-md ${selectedVariant?.id === variant.id
                             ? "border-primary bg-primary/20"
                             : "border-gray-300 hover:bg-gray-100"
-                        }`}
+                          }`}
                       >
                         {variant.quantity} {variant.unit}
                       </button>
@@ -239,7 +246,7 @@ export default function ProductDetail() {
                 {/* Price Section */}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-2 sm:space-y-0">
                   {selectedVariant?.discountPrice &&
-                  selectedVariant.discountPrice < selectedVariant.price ? (
+                    selectedVariant.discountPrice < selectedVariant.price ? (
                     <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
                       <div className="flex items-center space-x-2">
                         <span className="text-forest text-2xl sm:text-3xl font-bold">
@@ -254,7 +261,7 @@ export default function ProductDetail() {
                           ((selectedVariant.price -
                             selectedVariant.discountPrice) /
                             selectedVariant.price) *
-                            100,
+                          100,
                         )}% OFF
                       </span>
                       <div className="text-sm text-gray-600">
@@ -276,7 +283,7 @@ export default function ProductDetail() {
                     </div>
                   )}
                 </div>
-                
+
                 {/* Stock Info */}
                 <div className="text-sm text-olive bg-background/80 px-3 py-2 rounded-md w-fit">
                   <span className="font-medium">In Stock: </span>
