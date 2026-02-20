@@ -10,6 +10,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export default defineConfig({
+   server: {
+  allowedHosts: ["freshlyrooted.in", "www.freshlyrooted.in"],
+},
   plugins: [
     react(),
     runtimeErrorOverlay(),
