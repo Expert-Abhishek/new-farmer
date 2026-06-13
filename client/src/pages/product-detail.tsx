@@ -85,6 +85,12 @@ export default function ProductDetail() {
     .slice(0, 4);
   const [selectedVariant, setSelectedVariant] = useState<any | null>(null);
   const canonicalUrl = `${SITE_URL}/products/${id}`;
+  const productTitle = product?.name
+    ? `${product.name} | Harvest Direct`
+    : "Harvest Direct";
+  const productDescription = product?.description
+    ? `${product.name} - ${product.description}`
+    : "Discover fresh, authentic products directly from our partner farmers.";
   // Set default variant on product load or when product changes
   useEffect(() => {
     if (product?.variants && product.variants.length > 0) {
@@ -126,6 +132,15 @@ export default function ProductDetail() {
     <>
       {/* header  for seo*/}
       <Helmet>
+        <title>{productTitle}</title>
+        <meta name="description" content={productDescription} />
+        <meta property="og:title" content={productTitle} />
+        <meta property="og:description" content={productDescription} />
+        <meta property="og:type" content="product" />
+        <meta property="og:url" content={canonicalUrl} />
+        {product?.imageUrl && (
+          <meta property="og:image" content={product.imageUrl} />
+        )}
         <link rel="canonical" href={canonicalUrl} />
       </Helmet>
       {/* Product Detail Section */}
