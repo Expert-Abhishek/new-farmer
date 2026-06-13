@@ -104,7 +104,9 @@ interface EnhancedProduct {
   // SEO
   metaTitle?: string;
   metaDescription?: string;
+  
   slug?: string;
+  metaKeywords?: string[];
 
   // Social Sharing
   enableShareButtons: boolean;
@@ -164,6 +166,7 @@ const enhancedProductFormSchema = z.object({
   // SEO
   metaTitle: z.string().optional(),
   metaDescription: z.string().optional(),
+  metaKeywords: z.string().optional(),
   slug: z.string().optional(),
 
   // Social
@@ -247,6 +250,7 @@ export default function EnhancedAdminProducts() {
       metaTitle: "",
       metaDescription: "",
       slug: "",
+      metaKeywords: [],
       enableShareButtons: true,
       enableWhatsappShare: true,
       enableFacebookShare: true,
@@ -548,6 +552,7 @@ export default function EnhancedAdminProducts() {
       premiumQuality: product.premiumQuality || false,
       metaTitle: product.metaTitle || "",
       metaDescription: product.metaDescription || "",
+      metaKeywords: product.metaKeywords?.join(", ") || "",
       slug: product.slug || "",
       enableShareButtons: product.enableShareButtons !== false,
       enableWhatsappShare: product.enableWhatsappShare !== false,
@@ -646,6 +651,7 @@ export default function EnhancedAdminProducts() {
       premiumQuality: false,
       metaTitle: "",
       metaDescription: "",
+      metaKeywords: [],
       slug: "",
       enableShareButtons: true,
       enableWhatsappShare: true,
@@ -699,6 +705,7 @@ export default function EnhancedAdminProducts() {
         variants: data.variants,
         metaTitle: data.metaTitle || null,
         metaDescription: data.metaDescription || null,
+        metaKeywords: data.metaKeywords || null,
         slug: generatedSlug,
       };
 
@@ -1758,7 +1765,25 @@ export default function EnhancedAdminProducts() {
                         </FormItem>
                       )}
                     />
-
+<FormField
+  control={form.control}
+  name="metaKeywords" // 1. Updated form field name
+  render={({ field }) => (
+    <FormItem>
+      <FormLabel>Meta Keywords</FormLabel> {/* 2. Updated label */}
+      <FormControl>
+        <Input 
+          placeholder="e.g. ecommerce, tech, gadgets (comma-separated)" // 3. Changed to Input with relevant placeholder
+          {...field} 
+        />
+      </FormControl>
+      <FormDescription>
+        Separate individual keywords or phrases with commas.
+      </FormDescription>
+      <FormMessage />
+    </FormItem>
+  )}
+/>
                     <FormField
                       control={form.control}
                       name="slug"

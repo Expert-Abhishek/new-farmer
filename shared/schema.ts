@@ -108,6 +108,7 @@ export const products = pgTable("products", {
   premiumQuality: boolean("premium_quality").default(false),
   metaTitle: text("meta_title"),
   metaDescription: text("meta_description"),
+  metaKeywords: text("meta_keywords").array(),
   slug: text("slug"),
   enableShareButtons: boolean("enable_share_buttons").default(true),
   enableWhatsappShare: boolean("enable_whatsapp_share").default(true),
