@@ -30,7 +30,7 @@ export default function AdminAuthWrapper({ children }: AdminAuthWrapperProps) {
       
       // Optional: Silently verify token in background without redirecting
       try {
-        const response = await fetch( `${import.meta.env.VITE_API_URL}/api/admin/dashboard`, {
+        const response = await fetch( `/api/admin/dashboard`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }

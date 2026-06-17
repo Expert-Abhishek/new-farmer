@@ -214,7 +214,7 @@ export default function AdminProducts() {
   // Fetch farmers for product creation/editing
   const fetchFarmers = async () => {
     try {
-      const response = await fetch( `${import.meta.env.VITE_API_URL}/api/farmers`);
+      const response = await fetch( `/api/farmers`);
 
       if (!response.ok) {
         throw new Error("Failed to fetch farmers");
