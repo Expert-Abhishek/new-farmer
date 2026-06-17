@@ -72,7 +72,7 @@ export async function apiRequest(
     }
   }
 
-  const res = await fetch(url, {
+  const res = await fetch(`${import.meta.env.VITE_API_URL}${url}`, {
     ...options,
     headers,
     credentials: "include",
@@ -124,7 +124,7 @@ export const getQueryFn: <T>(options: {
       }
     }
 
-    const res = await fetch(url, {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}${url}`, {
       headers,
       credentials: "include",
     });
