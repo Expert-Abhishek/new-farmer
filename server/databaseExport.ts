@@ -58,6 +58,7 @@ function generateCreateTableSQL(tableName: string, schema: any): string {
   "premium_quality" BOOLEAN DEFAULT false,
   "meta_title" TEXT,
   "meta_description" TEXT,
+  "meta_keywords" TEXT[],
   "slug" TEXT,
   "enable_share_buttons" BOOLEAN DEFAULT true,
   "enable_whatsapp_share" BOOLEAN DEFAULT true,

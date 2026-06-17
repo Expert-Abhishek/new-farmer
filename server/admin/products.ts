@@ -13,6 +13,23 @@ import {
 import { eq, like, desc, asc, sql, and, inArray, ne } from "drizzle-orm";
 import { z } from "zod";
 
+const normalizeMetaKeywords = (value: unknown): string[] | null | undefined => {
+  if (value === undefined || value === null || value === "") return value === "" ? [] : value;
+
+  if (Array.isArray(value)) {
+    return value.map((item) => String(item).trim()).filter(Boolean);
+  }
+
+  if (typeof value === "string") {
+    return value
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+
+  return undefined;
+};
+
 // GET all products with pagination, sorting and filtering
 export const getAllInventoryProducts = async (req: Request, res: Response) => {
   try {
@@ -295,7 +312,11 @@ export const getProductWithVariants = async (productId: number) => {
 export const createProduct = async (req: Request, res: Response) => {
   try {
     // ✅ 1. Parse and validate request body
-    const parsedData = insertProductSchema.parse(req.body);
+    const normalizedBody = {
+      ...req.body,
+      metaKeywords: normalizeMetaKeywords(req.body.metaKeywords),
+    };
+    const parsedData = insertProductSchema.parse(normalizedBody);
     const { variants, ...productBaseData } = parsedData;
 
     // ✅ 2. Check SKU uniqueness across all variants
@@ -375,7 +396,11 @@ export const updateProduct = async (req: Request, res: Response) => {
     const productId = parseInt(id);
 
     // Validate request body (product + variants)
-    const parsedData = insertProductSchema.parse(req.body);
+    const normalizedBody = {
+      ...req.body,
+      metaKeywords: normalizeMetaKeywords(req.body.metaKeywords),
+    };
+    const parsedData = insertProductSchema.parse(normalizedBody);
     const { variants, ...productBaseData } = parsedData;
 
     // Check SKU uniqueness for new/updated SKUs (excluding variants of this product)

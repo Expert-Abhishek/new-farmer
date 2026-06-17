@@ -250,7 +250,7 @@ export default function EnhancedAdminProducts() {
       metaTitle: "",
       metaDescription: "",
       slug: "",
-      metaKeywords: [],
+      metaKeywords: "",
       enableShareButtons: true,
       enableWhatsappShare: true,
       enableFacebookShare: true,
@@ -307,7 +307,7 @@ export default function EnhancedAdminProducts() {
   // Fetch main categories
   const fetchMainCategories = async () => {
     try {
-      const response = await fetch("/api/categories/main", {
+      const response = await fetch( `/api/categories/main`, {
         headers: {
           "Cache-Control": "no-cache",
         },
@@ -350,7 +350,7 @@ export default function EnhancedAdminProducts() {
       const token = localStorage.getItem("adminToken");
       if (!token) return;
 
-      const response = await fetch("/api/admin/product-categories", {
+      const response = await fetch( `/api/admin/product-categories`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -368,7 +368,7 @@ export default function EnhancedAdminProducts() {
   // Fetch farmers for product creation/editing
   const fetchFarmers = async () => {
     try {
-      const response = await fetch("/api/farmers");
+      const response = await fetch( `/api/farmers`);
 
       if (response.ok) {
         const data = await response.json();
@@ -434,7 +434,7 @@ export default function EnhancedAdminProducts() {
         throw new Error("Authentication required");
       }
 
-      const response = await fetch(`/api/admin/products/${id}`, {
+      const response = await fetch( `/api/admin/products/${id}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -482,7 +482,7 @@ export default function EnhancedAdminProducts() {
         throw new Error("Authentication required");
       }
 
-      const response = await fetch(`/api/admin/products/${id}/featured`, {
+      const response = await fetch( `/api/admin/products/${id}/featured`, {
         method: "PATCH",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -651,7 +651,7 @@ export default function EnhancedAdminProducts() {
       premiumQuality: false,
       metaTitle: "",
       metaDescription: "",
-      metaKeywords: [],
+      metaKeywords: "",
       slug: "",
       enableShareButtons: true,
       enableWhatsappShare: true,
@@ -697,6 +697,12 @@ export default function EnhancedAdminProducts() {
       const generatedSlug = data.slug
         ? slugify(data.slug)
         : slugify(data.name);
+      const metaKeywords = data.metaKeywords
+        ? data.metaKeywords
+            .split(",")
+            .map((keyword) => keyword.trim())
+            .filter(Boolean)
+        : [];
       const requestData = {
         ...data,
         imageUrl: finalImageUrl,
@@ -705,7 +711,7 @@ export default function EnhancedAdminProducts() {
         variants: data.variants,
         metaTitle: data.metaTitle || null,
         metaDescription: data.metaDescription || null,
-        metaKeywords: data.metaKeywords || null,
+        metaKeywords,
         slug: generatedSlug,
       };
 
@@ -714,7 +720,7 @@ export default function EnhancedAdminProducts() {
 
       if (productToEdit) {
         // Update existing product
-        response = await fetch(`/api/admin/products/${productToEdit.id}`, {
+        response = await fetch( `/api/admin/products/${productToEdit.id}`, {
           method: "PUT",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -724,7 +730,7 @@ export default function EnhancedAdminProducts() {
         });
       } else {
         // Create new product
-        response = await fetch("/api/admin/products", {
+        response = await fetch( `/api/admin/products`, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,
