@@ -931,6 +931,13 @@ export default function AdminOrders() {
                         "No email provided"}
                     </p>
                   </div>
+                      <div>
+                    <Label className="text-sm font-medium">Notes</Label>
+                    <p className="text-sm text-muted-foreground">
+                      {selectedOrderDetails.customer.notes ||
+                        "No notes provided"}
+                    </p>
+                  </div>
                     <div>
                     <Label className="text-sm font-medium">Phone</Label>
                     <p className="text-sm text-muted-foreground">
@@ -938,6 +945,7 @@ export default function AdminOrders() {
                         "No phone number provided"}
                     </p>
                   </div>
+
                   <div className="md:col-span-2">
                     <Label className="text-sm font-medium">
                       Shipping Address
