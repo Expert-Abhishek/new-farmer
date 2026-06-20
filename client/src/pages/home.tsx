@@ -313,7 +313,7 @@ export default function Home() {
                         : formatSnakeCase(product.unit!)}
                     </span> */}
                     <Link
-                      to={`/products/${product.id}`}
+                      to={`/products/${product.slug}`}
                       className="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-md font-semibold transition duration-300"
                     >
                       View Details
